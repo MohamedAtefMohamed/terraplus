@@ -2,6 +2,7 @@
 
 import { RefreshCw, ServerCrash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export function ErrorPanel({
@@ -24,7 +25,7 @@ export function ErrorPanel({
         <p className="text-sm font-medium text-foreground">{title}</p>
         <p className="text-xs leading-relaxed text-muted">{message}</p>
         <p className="font-mono text-[10px] text-muted/70">
-          Expected backend: http://localhost:8000 · start it with uvicorn app.main:app
+          Expected backend: {apiUrl("").replace(/\/$/, "") || "same origin"}
         </p>
       </div>
       {onRetry ? (
