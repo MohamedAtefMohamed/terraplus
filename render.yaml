@@ -1,0 +1,26 @@
+# Render blueprint for the TerraPulse FastAPI backend.
+# Frontend (Next.js) is served by Vercel; backend lives here on Render's free tier.
+services:
+  - type: web
+    name: terraplus-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATA_MODE
+        value: demo
+      - key: LIVE_DISCOVERY_ENABLED
+        value: "true"
+      - key: ENABLE_LLM_NARRATION
+        value: "false"
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        sync: false   # Set to your Vercel domain after first deploy, e.g. https://terraplus.vercel.app
+    disk:
+      name: terraplus-data
+      mountPath: /app/data
+      sizeGB: 1

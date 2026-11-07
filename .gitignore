@@ -1,0 +1,40 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-debug.log*
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Runtime data (generated demo scenes, SQLite DB, derived assets)
+backend/data/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+!frontend/.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Test / QA artifacts
+coverage/
+playwright-report/
+test-results/
+screenshots/
