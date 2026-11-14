@@ -239,6 +239,10 @@ export default function MethodologyPage() {
               </Callout>
               <div className="flex flex-wrap gap-3">
                 {[
+                  {
+                    href: "https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources",
+                    label: "Space Apps 2026 challenge and resources",
+                  },
                   { href: "https://science.nasa.gov/mission/nisar/", label: "NASA NISAR mission" },
                   { href: "https://nisar-docs.asf.alaska.edu/", label: "NISAR documentation" },
                   { href: "https://science.nasa.gov/mission/nisar/sample-data/", label: "Official sample data" },

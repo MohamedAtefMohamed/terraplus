@@ -8,7 +8,6 @@ import { ArrowUpRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
-import { ModeBadge } from "@/components/layout/mode-badge";
 
 const NAV = [
   { href: "/live", label: "Live lab" },
@@ -24,7 +23,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/80 bg-background/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-background/70 backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Logo />
 
@@ -42,7 +42,7 @@ export function SiteHeader() {
               >
                 {item.label}
                 {active ? (
-                  <span className="absolute inset-x-3 -bottom-[1px] h-px bg-gradient-to-r from-accent/0 via-accent to-accent/0" />
+                  <span className="absolute inset-x-3 -bottom-[1px] h-[2px] rounded-full bg-gradient-to-r from-accent/0 via-accent to-accent/0 shadow-[0_0_18px_rgba(77,227,247,0.7)]" />
                 ) : null}
               </Link>
             );
@@ -50,9 +50,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <ModeBadge className="hidden sm:inline-flex" />
           <Link
-            href="/dashboard"
+            href="/live"
             className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
           >
             Open live lab
@@ -98,9 +97,8 @@ export function SiteHeader() {
                 );
               })}
               <div className="mt-2 flex items-center justify-between border-t border-line pt-3">
-                <ModeBadge />
                 <Link
-                  href="/dashboard"
+                  href="/live"
                   onClick={() => setOpen(false)}
                   className={cn(buttonVariants({ size: "sm" }))}
                 >

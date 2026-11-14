@@ -44,14 +44,23 @@ function SectionHeading({
 export default function LandingPage() {
   return (
     <div>
-      <section className="container-page grid grid-cols-1 items-start gap-10 pb-14 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-20 lg:pt-14">
+      <section className="relative isolate overflow-hidden">
+        <div className="aurora" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 grid-surface opacity-25" aria-hidden="true" />
+        <div className="container-page relative grid grid-cols-1 items-start gap-10 pb-14 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-20 lg:pt-14">
         <div className="space-y-6">
           <Reveal>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="accent">
+              <a
+                href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[0.6875rem] font-medium tracking-wide text-accent-soft transition-colors hover:border-accent/60 hover:bg-accent/15"
+              >
                 <Satellite className="size-3" />
-                NASA Space Apps Challenge
-              </Badge>
+                NASA Space Apps 2026 · Dancing with the SARs
+                <ArrowUpRight className="size-3" />
+              </a>
               <Badge variant="teal">
                 <Radar className="size-3" />
                 NISAR catalogue live
@@ -63,7 +72,8 @@ export default function LandingPage() {
           <Reveal delay={0.05}>
             <div className="space-y-4">
               <h1 className="max-w-2xl text-[2.5rem] font-semibold leading-[1.06] tracking-[-0.04em] text-foreground sm:text-[3.2rem] lg:text-[3.5rem]">
-                Read surface change with radar, day or night.
+                Read surface change with radar,{" "}
+                <span className="text-gradient">day or night</span>.
               </h1>
               <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted-strong">
                 TerraPulse queries the ASF catalogue for NISAR acquisitions and measures
@@ -110,15 +120,18 @@ export default function LandingPage() {
         </div>
 
         <Reveal delay={0.12}>
-          <LiveNisarFeed />
+          <div className="glow-ring rounded-[var(--radius-lg)]">
+            <LiveNisarFeed />
+          </div>
         </Reveal>
+        </div>
       </section>
 
       <div className="container-page pb-16">
         <LandingStats />
       </div>
 
-      <section className="border-y border-line/70">
+      <section className="section-band">
         <div className="container-page py-16">
           <Reveal>
             <SectionHeading
@@ -270,7 +283,7 @@ new_water = (later < water_thr) ∧ ¬(earlier < water_thr)`}
         </div>
       </section>
 
-      <section className="border-y border-line/70">
+      <section className="section-band">
         <div className="container-page py-16">
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -341,6 +354,11 @@ new_water = (later < water_thr) ∧ ¬(earlier < water_thr)`}
               </div>
               <div className="mt-4 space-y-3">
                 {[
+                  {
+                    name: "Space Apps 2026 challenge brief",
+                    href: "https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources",
+                    note: "Challenge description and NASA resource links",
+                  },
                   {
                     name: "ASF DAAC search API",
                     href: "https://search.asf.alaska.edu/",

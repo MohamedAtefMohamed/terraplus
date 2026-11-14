@@ -4,18 +4,18 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --color-background: #080a0c;
-  --color-background-soft: #0a0d10;
-  --color-surface: #0e1215;
-  --color-surface-raised: #12171b;
-  --color-surface-high: #161d22;
-  --color-line: #1e262b;
-  --color-line-strong: #2c3a41;
-  --color-foreground: #e9eef0;
-  --color-muted: #8d9aa1;
-  --color-muted-strong: #b3c0c6;
-  --color-accent: #38c9d8;
-  --color-accent-soft: #7fe3ee;
+  --color-background: #05070b;
+  --color-background-soft: #070a10;
+  --color-surface: #0b1118;
+  --color-surface-raised: #101823;
+  --color-surface-high: #16212e;
+  --color-line: #1a2431;
+  --color-line-strong: #2a3b4d;
+  --color-foreground: #ecf3f8;
+  --color-muted: #8fa1b3;
+  --color-muted-strong: #b9c8d6;
+  --color-accent: #4de3f7;
+  --color-accent-soft: #8bf2ff;
   --color-teal: #2dd4bf;
   --color-emerald: #34d399;
   --color-amber: #fbbf24;
@@ -24,10 +24,10 @@
   --color-violet: #a78bfa;
 
   --radius-xs: 0.25rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
 }
 
 @layer base {
@@ -42,11 +42,29 @@
 
   body {
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(1100px 620px at 50% -12%, rgba(77, 227, 247, 0.11), transparent 62%),
+      radial-gradient(900px 520px at 92% 2%, rgba(124, 122, 255, 0.07), transparent 60%),
+      radial-gradient(800px 500px at 4% 12%, rgba(45, 212, 191, 0.05), transparent 60%);
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(140, 190, 220, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140, 190, 220, 0.035) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, black, transparent 76%);
   }
 
   ::selection {
@@ -87,55 +105,100 @@
   }
 
   .panel {
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
+    position: relative;
+    background:
+      linear-gradient(158deg, rgba(22, 33, 46, 0.72) 0%, rgba(10, 16, 23, 0.92) 62%);
+    border: 1px solid rgba(125, 180, 214, 0.14);
     border-radius: var(--radius-lg);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.045),
+      0 24px 60px -42px rgba(0, 0, 0, 0.95);
   }
 
   .panel-hover {
     transition:
-      border-color 180ms ease,
-      background 180ms ease,
-      transform 180ms ease;
+      border-color 200ms ease,
+      background 200ms ease,
+      box-shadow 200ms ease,
+      transform 200ms ease;
   }
 
   .panel-hover:hover {
-    border-color: var(--color-line-strong);
-    background: var(--color-surface-raised);
+    border-color: rgba(77, 227, 247, 0.32);
+    background: linear-gradient(158deg, rgba(28, 42, 58, 0.8) 0%, rgba(11, 18, 26, 0.94) 62%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 26px 70px -40px rgba(0, 0, 0, 0.95),
+      0 0 46px -26px rgba(77, 227, 247, 0.45);
+    transform: translateY(-2px);
   }
 
   .panel-flat {
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-line);
+    background: rgba(16, 24, 35, 0.72);
+    border: 1px solid rgba(125, 180, 214, 0.12);
     border-radius: var(--radius-md);
+    backdrop-filter: blur(8px);
   }
 
   .eyebrow {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--color-accent);
+    text-shadow: 0 0 24px rgba(77, 227, 247, 0.35);
   }
 
   .hairline {
     height: 1px;
-    background: var(--color-line);
+    background: linear-gradient(90deg, transparent, var(--color-line-strong), transparent);
   }
 
   .grid-surface {
     background-image:
-      linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+      linear-gradient(rgba(77, 227, 247, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77, 227, 247, 0.055) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 45%, black, transparent 80%);
   }
 
   .text-gradient {
-    color: inherit;
+    background: linear-gradient(102deg, #f2fdff 6%, #9df3ff 42%, #b9b7ff 96%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .glow-ring {
-    box-shadow: 0 0 0 1px var(--color-line-strong);
+    box-shadow:
+      0 0 0 1px rgba(77, 227, 247, 0.3),
+      0 0 60px -18px rgba(77, 227, 247, 0.5);
+  }
+
+  .aurora {
+    position: absolute;
+    inset: -25%;
+    pointer-events: none;
+    background: conic-gradient(
+      from 160deg at 50% 50%,
+      rgba(77, 227, 247, 0.16),
+      rgba(124, 122, 255, 0.1),
+      rgba(45, 212, 191, 0.12),
+      rgba(77, 227, 247, 0.16)
+    );
+    filter: blur(90px);
+    opacity: 0.55;
+    animation: aurora-drift 26s ease-in-out infinite alternate;
+  }
+
+  .section-band {
+    position: relative;
+    border-block: 1px solid rgba(255, 255, 255, 0.06);
+    background:
+      radial-gradient(900px 300px at 50% 0%, rgba(77, 227, 247, 0.05), transparent 70%),
+      linear-gradient(180deg, rgba(10, 16, 23, 0.6), rgba(5, 7, 11, 0));
   }
 
   .scrollbar-thin {
@@ -212,6 +275,15 @@
   .metric-value {
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
+  }
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1.05);
+  }
+  100% {
+    transform: translate3d(5%, 3%, 0) rotate(10deg) scale(1.2);
   }
 }
 

@@ -13,6 +13,10 @@ const links = [
 ];
 
 const sources = [
+  {
+    href: "https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources",
+    label: "2026 challenge brief and resources",
+  },
   { href: "https://science.nasa.gov/mission/nisar/", label: "NASA NISAR mission" },
   { href: "https://nisar-docs.asf.alaska.edu/", label: "NISAR product documentation" },
   { href: "https://search.asf.alaska.edu/", label: "ASF DAAC search" },
@@ -30,10 +34,6 @@ export function SiteFooter() {
               TerraPulse is a submission for the NASA Space Apps Challenge. The live lab queries
               the NISAR catalogue from ASF and measures change on Sentinel-1 scenes. The dashboard
               and timeline read a bundled demo dataset.
-            </p>
-            <p className="max-w-sm rounded-md border border-amber/20 bg-amber/[0.05] px-3 py-2 font-mono text-[11px] leading-relaxed tracking-wide text-amber/90">
-              Readings are screening signals. Not a flood map, not a calibrated NISAR product,
-              not for operational or safety decisions.
             </p>
           </div>
 
