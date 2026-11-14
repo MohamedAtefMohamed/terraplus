@@ -29,12 +29,9 @@ class Settings(BaseSettings):
     environment: str = "development"
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
-    # --- Data modes -------------------------------------------------------
-    # demo  : generated, clearly-labelled synthetic SAR scenes (always works)
-    # sample: pre-staged real sample rasters described by data/sample/manifest.json
-    # live  : live NISAR granule discovery through ASF / NASA CMR STAC
-    # auto  : use sample if staged, otherwise demo
-    data_mode: str = "demo"
+    # --- Data mode ---------------------------------------------------------
+    # TerraPulse is live-only: NISAR catalogue from ASF and Sentinel-1 change.
+    data_mode: str = "live"
     live_discovery_enabled: bool = True
 
     # --- Storage ----------------------------------------------------------
