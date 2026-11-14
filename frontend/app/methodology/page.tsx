@@ -89,8 +89,8 @@ export default function MethodologyPage() {
                 <ShieldAlert className="size-3" /> Data notice
               </p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-                Bundled pixels are synthetic. Real coordinates, fabricated radar backscatter. No
-                operational or safety use.
+                Demo workspace pixels are synthetic. The live lab measures real Sentinel-1
+                scenes. Neither is an operational or safety product.
               </p>
             </div>
           </div>
@@ -103,17 +103,17 @@ export default function MethodologyPage() {
             </H2>
             <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-strong">
               <p>
-                TerraPulse is a demonstration of how satellite radar observations can be turned into
-                understandable surface-change information. It connects four things that are often
-                separated: observation discovery, raster comparison, spatial statistics and careful
-                interpretation.
+                TerraPulse turns radar observations into surface-change information. It connects
+                observation discovery, raster comparison, spatial statistics, and interpretation in
+                one interface.
               </p>
               <p>
-                The product is designed around the NASA-ISRO <strong className="text-foreground">NISAR</strong>{" "}
-                mission, but it does not ship NISAR pixels. The bundled dataset is a{" "}
-                <strong className="text-foreground">deterministic synthetic SAR demonstration</strong> with
-                real geographic coordinates, realistic dB values, four-look speckle and nodata. Every
-                screen exposes that origin.
+                Two pipelines run side by side. The <strong className="text-foreground">live lab</strong>{" "}
+                reads the NISAR catalogue from ASF and computes change on public Sentinel-1 GRD
+                scenes, with no account and no full-scene download. The{" "}
+                <strong className="text-foreground">demo workspace</strong> keeps a deterministic
+                synthetic dataset for dashboard, timeline, and explanation features when the network
+                is unavailable. Every screen states which pipeline produced the numbers.
               </p>
             </div>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -133,7 +133,7 @@ export default function MethodologyPage() {
                 {
                   icon: Satellite,
                   title: "LIVE",
-                  body: "Real NISAR granule metadata via ASF. No product download.",
+                  body: "NISAR catalogue from ASF. Sentinel-1 change reads, computed on demand.",
                   tone: "emerald" as const,
                 },
               ].map((item) => {
@@ -230,12 +230,12 @@ export default function MethodologyPage() {
                 })}
               </div>
               <Callout tone="warning" title="Integration status">
-                TerraPulse supports live NISAR <strong>metadata discovery</strong> through ASF. It
-                does not download or calibrate NISAR products. Doing so requires authenticated NASA
-                Earthdata access plus mission-specific product handling, which is outside this MVP.
-                The app reports this status rather than hiding it. Live search results can be
-                drawn as real NISAR granule footprints on the map; those polygons are metadata,
-                not processed analysis layers.
+                The NISAR catalogue, browse quick-looks, and granule footprints are live from ASF.
+                NISAR L-band pixel analysis is not: the archive currently serves RSLC, GSLC, and
+                GCOV products, and turning them into comparable backscatter grids needs
+                authenticated downloads and mission-specific calibration. The live lab therefore
+                measures change on Sentinel-1 C-band GRD scenes and labels that substitution on
+                every result.
               </Callout>
               <div className="flex flex-wrap gap-3">
                 {[
@@ -409,8 +409,8 @@ export default function MethodologyPage() {
                   icon: Satellite,
                   name: "LIVE",
                   badge: "emerald" as const,
-                  status: "Metadata discovery enabled",
-                  body: "The ASF DAAC search adapter queries real NISAR granule metadata. The result list is metadata only. Downloading and calibrating products requires NASA Earthdata Login and is not implemented; analyses therefore remain DEMO.",
+                  status: "Catalogue and change analysis enabled",
+                  body: "The ASF DAAC search adapter returns real NISAR granule records with browse imagery. The change endpoint pairs Sentinel-1 GRD scenes on the same relative orbit and reads decimated windows over HTTPS. Results cache for six hours per area and parameter set.",
                 },
               ].map((mode) => {
                 const Icon = mode.icon;
@@ -444,12 +444,12 @@ export default function MethodologyPage() {
               {[
                 "A backscatter change does not identify a cause.",
                 "Surface roughness, vegetation, soil moisture and acquisition geometry can mimic a water signal.",
-                "The demo uses single-polarisation VV and no incidence-angle normalisation.",
+                "Live comparisons use Sentinel-1 C-band VV with no incidence-angle normalisation.",
                 "The 5×5 median filter is a screening choice, not a validated speckle workflow.",
                 "Thresholds are configurable screens, not universal constants.",
                 "No optical, gauge or field validation is performed.",
-                "The demonstration data is synthetic and must not be cited as a real event.",
-                "Live NISAR products are not downloaded or processed in this MVP.",
+                "Demo workspace scenes are synthetic and must not be cited as real events.",
+                "NISAR L-band pixels are not processed yet; live change uses Sentinel-1 C-band.",
                 "The processing-quality score is not an event probability.",
                 "The application is not an emergency, safety or operational product.",
               ].map((item) => (

@@ -461,3 +461,95 @@ export interface AnalysisStatistics {
   confidence: { score: number; label: string };
   rows: AnalysisStatisticRow[];
 }
+
+export interface LiveNisarGranule {
+  id: string;
+  platform: string;
+  sensor: string;
+  product_level: string | null;
+  product_type: string | null;
+  start: string | null;
+  end: string | null;
+  flight_direction: string | null;
+  track: number | string | null;
+  frame: number | string | null;
+  polarization: string[];
+  center_lat: number | null;
+  center_lon: number | null;
+  browse_thumbnail: string | null;
+  browse_latlon: string | null;
+  download_url: string | null;
+  footprint: number[][];
+  source: string;
+}
+
+export interface LiveNisarResponse {
+  ok: boolean;
+  error: string | null;
+  scope: "aoi" | "global-fallback";
+  count: number;
+  items: LiveNisarGranule[];
+  query: { bbox: number[] | null; days: number; start: string; end: string; limit: number };
+  queried_at: string;
+  source: string;
+  limitations: string;
+}
+
+export interface LiveSceneRef {
+  id: string;
+  datetime: string;
+  relative_orbit: number | null;
+  orbit_state: string | null;
+  polarizations?: string[];
+}
+
+export interface LiveChangeResult {
+  ok: boolean;
+  cached: boolean;
+  key: string;
+  bbox: [number, number, number, number];
+  grid_size: number;
+  before: LiveSceneRef;
+  after: LiveSceneRef;
+  gap_days: number;
+  method: {
+    sensor: string;
+    policy: string;
+    change_threshold_db: number;
+    water_threshold_db: number;
+    water_threshold_method: string;
+  };
+  stats: {
+    valid_fraction: number;
+    changed_fraction: number;
+    water_before_fraction: number;
+    water_after_fraction: number;
+    water_gain_fraction: number;
+    water_loss_fraction: number;
+  };
+  media: { before: string; after: string; change: string };
+  media_inline?: { before: string; after: string; change: string };
+  geojson: GeoJSON.FeatureCollection;
+  provenance: Record<string, string>;
+  limitations: string;
+  computed_at: string;
+  elapsed_seconds: number;
+}
+
+export interface LiveScenesResponse {
+  ok: boolean;
+  count: number;
+  pair: { before: LiveSceneRef; after: LiveSceneRef } | null;
+  pair_error: string | null;
+  items: Array<{
+    id: string;
+    datetime: string;
+    relative_orbit: number | null;
+    orbit_state: string | null;
+    platform: string;
+    instrument_mode: string | null;
+    polarizations: string[];
+    resolution_m: number | null;
+  }>;
+  source: string;
+}

@@ -28,15 +28,15 @@ def resolve_mode() -> dict[str, Any]:
         )
     if requested == "live":
         fallback_reason = (
-            "LIVE mode enables NISAR metadata discovery. Raster analysis remains DEMO, "
-            "because authenticated product download is not enabled in this MVP."
+            "LIVE mode serves the NISAR catalogue from ASF plus live Sentinel-1 comparisons "
+            "in the live lab. The dashboard and timeline still read the bundled demo dataset."
         )
 
     # Sample processing is not wired into the MVP analysis pipeline. Even when
     # real sample products are staged for discovery, raster analyses shown by the
     # UI are the DEMO dataset and must be labelled as such.
     analysis_mode = "demo"
-    label = "DEMO DATA · SYNTHETIC"
+    label = "LIVE CATALOGUE · DEMO WORKSPACE"
     if effective == "sample":
         label = "SAMPLE STAGED · DEMO ANALYSIS"
     elif effective == "live":
@@ -55,8 +55,8 @@ def resolve_mode() -> dict[str, Any]:
             "earthdata_credentials_configured": settings.has_earthdata_credentials,
             "download_supported": False,
             "note": (
-                "Discover NISAR granule metadata with ASF. Product download requires "
-                "NASA Earthdata Login and is not implemented in this MVP."
+                "NISAR catalogue discovery and browse imagery run without credentials. "
+                "Live pixel change uses public Sentinel-1 GRD scenes."
             ),
         },
     }

@@ -21,7 +21,11 @@ export function formatCompact(value: number | null | undefined): string {
   }).format(value);
 }
 
-export function formatDate(value: string | Date, opts?: Intl.DateTimeFormatOptions): string {
+export function formatDate(
+  value: string | Date | null | undefined,
+  opts?: Intl.DateTimeFormatOptions,
+): string {
+  if (value === null || value === undefined) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("en-US", {
@@ -33,11 +37,11 @@ export function formatDate(value: string | Date, opts?: Intl.DateTimeFormatOptio
   }).format(date);
 }
 
-export function formatDateShort(value: string | Date): string {
+export function formatDateShort(value: string | Date | null | undefined): string {
   return formatDate(value, { month: "short", day: "2-digit" });
 }
 
-export function formatDateTime(value: string | Date): string {
+export function formatDateTime(value: string | Date | null | undefined): string {
   return formatDate(value, {
     month: "short",
     day: "2-digit",

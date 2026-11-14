@@ -380,3 +380,81 @@ def timeline(
 @router.get("/layers", tags=["map"])
 def layers() -> dict:
     return build_layers()
+
+
+# ---------------------------------------------------------------------------
+# Live data (real NASA catalog + public SAR scenes)
+# ---------------------------------------------------------------------------
+
+from app.services.live.nisar_live import nisar_status, recent_nisar
+from app.services.live.sentinel1_change import (
+    LiveChangeError,
+    available_scenes,
+    compute_change,
+)
+
+
+def _live_bbox(bbox: str | None, location: str | None, db: Session) -> list[float]:
+    location_row = None
+    if location:
+        location_row = db.scalar(select(Location).where(Location.slug == location))
+        if location_row is None:
+            raise HTTPException(status_code=404, detail="Location not found")
+    return _parse_bbox(bbox, location_row)
+
+
+@router.get("/live/nisar", tags=["live"])
+def live_nisar(
+    bbox: str | None = Query(None, description="west,south,east,north"),
+    location: str | None = Query(None, max_length=80),
+    days: int = Query(45, ge=1, le=365),
+    limit: int = Query(40, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> dict:
+    bbox_values = _live_bbox(bbox, location, db) if (bbox or location) else None
+    return recent_nisar(bbox=bbox_values, days=days, limit=limit)
+
+
+@router.get("/live/sentinel1", tags=["live"])
+def live_sentinel1(
+    bbox: str = Query(..., description="west,south,east,north"),
+    days: int = Query(90, ge=7, le=365),
+) -> dict:
+    bbox_values = _live_bbox(bbox, None, None)
+    try:
+        return available_scenes(bbox_values, days=days)
+    except LiveChangeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/live/change", tags=["live"])
+def live_change(
+    bbox: str = Query(..., description="west,south,east,north"),
+    days: int = Query(90, ge=7, le=365),
+    threshold_db: float = Query(3.0, ge=0.5, le=12.0),
+    force: bool = Query(False),
+) -> dict:
+    bbox_values = _live_bbox(bbox, None, None)
+    try:
+        return compute_change(
+            bbox_values,
+            days=days,
+            threshold_db=threshold_db,
+            grid_size=settings.live_change_grid_size,
+            force=force,
+        )
+    except LiveChangeError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/live/status", tags=["live"])
+def live_status() -> dict:
+    return {
+        "nisar": nisar_status(),
+        "sentinel1": {
+            "stac": "https://earth-search.aws.element84.com/v1",
+            "collection": "sentinel-1-grd",
+            "requires_credentials": False,
+            "note": "Windowed COG reads over HTTPS; read-only.",
+        },
+    }

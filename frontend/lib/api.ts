@@ -1,5 +1,8 @@
 import type {
   Analysis,
+  LiveChangeResult,
+  LiveNisarResponse,
+  LiveScenesResponse,
   AnalysisStatistics,
   AnalysisSummary,
   ConfigStatus,
@@ -118,6 +121,21 @@ export const api = {
   layers: () => request<LayersResponse>("/api/layers"),
   dataSources: () => request<DataSourcesResponse>("/api/data-sources"),
   geojson: (id: number) => request<GeoJSON.FeatureCollection>(`/api/analysis/${id}/geojson`),
+  liveNisar: (params?: { location?: string; bbox?: string; days?: number; limit?: number }) =>
+    request<LiveNisarResponse>(`/api/live/nisar${queryString(params || {})}`),
+  liveScenes: (params: { bbox: string; days?: number }) =>
+    request<LiveScenesResponse>(
+      `/api/live/sentinel1${queryString(params as Record<string, string | number>)}`,
+    ),
+  liveChange: (params: { bbox: string; days?: number; threshold_db?: number; force?: boolean }) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) search.set(key, String(value));
+    }
+    return request<LiveChangeResult>(`/api/live/change?${search.toString()}`, {
+      method: "POST",
+    });
+  },
 };
 
 export const queryKeys = {
@@ -132,4 +150,5 @@ export const queryKeys = {
   timeline: (slug: string) => ["timeline", slug] as const,
   layers: ["layers"] as const,
   dataSources: ["data-sources"] as const,
+  liveNisar: (params?: Record<string, unknown>) => ["live-nisar", params] as const,
 };

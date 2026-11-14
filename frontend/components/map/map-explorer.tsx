@@ -51,9 +51,10 @@ const DEFAULT_VISIBILITY: Record<string, boolean> = {
 };
 
 const BASEMAPS: Array<{ key: BasemapKey; label: string }> = [
-  { key: "satellite", label: "Satellite" },
+  { key: "gibs", label: "NASA GIBS daily" },
+  { key: "satellite", label: "Esri satellite" },
   { key: "dark", label: "Dark vector" },
-  { key: "solid", label: "Solid fallback" },
+  { key: "solid", label: "Solid" },
 ];
 
 function distanceKm(a: [number, number], b: [number, number]) {
@@ -199,7 +200,7 @@ export function MapExplorer() {
 
   const [panel, setPanel] = useState(initialPanel);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialLocation);
-  const [basemap, setBasemap] = useState<BasemapKey>("satellite");
+  const [basemap, setBasemap] = useState<BasemapKey>("gibs");
   const [visibility, setVisibility] = useState<Record<string, boolean>>(DEFAULT_VISIBILITY);
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
@@ -438,7 +439,13 @@ export function MapExplorer() {
               }
             />
             <div className="pointer-events-none absolute bottom-2 right-3 z-10 rounded border border-line bg-[#07101c]/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
-              {basemap === "satellite" ? "Esri imagery" : basemap === "dark" ? "CARTO dark" : "Solid fallback"}
+              {basemap === "gibs"
+                ? "NASA GIBS daily imagery"
+                : basemap === "satellite"
+                  ? "Esri imagery"
+                  : basemap === "dark"
+                    ? "CARTO dark"
+                    : "Solid"}
             </div>
           </>
         )}

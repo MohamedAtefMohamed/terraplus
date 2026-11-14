@@ -27,6 +27,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { DashboardMapCard } from "@/components/dashboard/dashboard-map-card";
 import { DataModePanel } from "@/components/dashboard/data-mode-panel";
 import { AnalysisCard } from "@/components/analysis/analysis-card";
+import { LiveCatalogueCard } from "@/components/dashboard/live-catalogue-card";
 
 export function DashboardView() {
   const query = useQuery({ queryKey: queryKeys.dashboard, queryFn: api.dashboard });
@@ -35,9 +36,9 @@ export function DashboardView() {
   return (
     <div className="container-page py-8 lg:py-10">
       <PageHeader
-        eyebrow="Intelligence console"
+        eyebrow="Console"
         title="Surface change overview"
-        description="A working view of the TerraPulse demonstration dataset: three monitored areas, paired radar observations and persisted change analyses."
+        description="Live NISAR records from ASF sit next to the bundled demo workspace. The live lab runs real comparisons; the demo analyses below stay clearly labelled."
         actions={
           <>
             <Button
@@ -88,6 +89,8 @@ export function DashboardView() {
               {data.data_status.fallback_reason}
             </Callout>
           ) : null}
+
+          <LiveCatalogueCard />
 
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard

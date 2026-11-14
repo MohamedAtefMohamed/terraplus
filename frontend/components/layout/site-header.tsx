@@ -11,11 +11,11 @@ import { Logo } from "@/components/layout/logo";
 import { ModeBadge } from "@/components/layout/mode-badge";
 
 const NAV = [
+  { href: "/live", label: "Live lab" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/map", label: "Map explorer" },
   { href: "/analysis", label: "Change analysis" },
   { href: "/timeline", label: "Timeline" },
-  { href: "/insights", label: "Insights" },
   { href: "/methodology", label: "Methodology" },
 ];
 

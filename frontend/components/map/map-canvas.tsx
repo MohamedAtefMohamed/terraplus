@@ -6,7 +6,7 @@ import type { AnalysisSummary, LiveItem, Location, Observation } from "@/types/a
 import { assetUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-export type BasemapKey = "satellite" | "dark" | "solid";
+export type BasemapKey = "gibs" | "satellite" | "dark" | "solid";
 
 type OverlayAnalysis = AnalysisSummary & {
   bounds?: [number, number, number, number];
@@ -167,6 +167,17 @@ function clickedPointFC(point: { lng: number; lat: number } | null): MinimalFeat
   };
 }
 
+function gibsDate(): string {
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() - 1);
+  return now.toISOString().slice(0, 10);
+}
+
+const GIBS_DATE = gibsDate();
+const GIBS_TILES = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${GIBS_DATE}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
+const GIBS_ATTRIBUTION =
+  'Imagery: NASA GIBS / MODIS Terra Corrected Reflectance (daily)';
+
 const BASE_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -178,6 +189,13 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
       tileSize: 256,
       maxzoom: 18,
       attribution: ESRI_ATTRIBUTION,
+    },
+    "gibs-imagery": {
+      type: "raster",
+      tiles: [GIBS_TILES],
+      tileSize: 256,
+      maxzoom: 9,
+      attribution: GIBS_ATTRIBUTION,
     },
     "carto-dark": {
       type: "raster",
@@ -203,6 +221,17 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
         "raster-contrast": 0.04,
         "raster-brightness-min": 0.04,
         "raster-brightness-max": 0.92,
+      },
+    },
+    {
+      id: "gibs-base",
+      type: "raster",
+      source: "gibs-imagery",
+      layout: { visibility: "none" },
+      paint: {
+        "raster-opacity": 0.92,
+        "raster-saturation": -0.1,
+        "raster-contrast": 0.02,
       },
     },
     {
@@ -518,6 +547,12 @@ export function MapCanvas({
     };
     set("esri-base", basemap === "satellite" ? "visible" : "none");
     set("carto-base", basemap === "dark" ? "visible" : "none");
+    set("gibs-base", basemap === "gibs" ? "visible" : "none");
+    if (basemap === "solid") {
+      set("esri-base", "none");
+      set("carto-base", "none");
+      set("gibs-base", "none");
+    }
     if (map.getLayer("areas-fill")) {
       map.setPaintProperty(
         "areas-fill",

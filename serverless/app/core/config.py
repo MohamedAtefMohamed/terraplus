@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     stac_api_url: str = "https://cmr.earthdata.nasa.gov/stac/ASF"
     live_search_timeout_seconds: float = 12.0
     live_search_max_results: int = 50
+    live_change_grid_size: int = 512
+    live_cache_ttl_seconds: int = 21600
 
     # --- Optional LLM narration (the app never requires it) ---------------
     # Narration is opt-in so an ambient OPENAI_API_KEY on the host cannot
@@ -114,6 +116,7 @@ class Settings(BaseSettings):
             self.raster_dir,
             self.demo_dir,
             self.sample_dir,
+            self.data_dir / "live",
         ):
             path.mkdir(parents=True, exist_ok=True)
 

@@ -36,8 +36,7 @@ export function ModeBadge({ className }: { className?: string }) {
   const effective = (mode?.analysis_mode === "demo" ? "demo" : mode?.effective_mode) || "demo";
   const config = styles[effective as keyof typeof styles] || styles.demo;
   const Icon = config.icon;
-  const label =
-    data?.nisar.enabled && mode?.effective_mode === "live" ? "NISAR LIVE · DEMO ANALYSIS" : config.label;
+  const label = data?.nisar.enabled ? "LIVE CATALOGUE · DEMO WORKSPACE" : config.label;
 
   return (
     <Tooltip>
@@ -59,8 +58,9 @@ export function ModeBadge({ className }: { className?: string }) {
         </Link>
       </TooltipTrigger>
       <TooltipContent>
-        {mode?.fallback_reason || data?.llm.note || "Bundled observations are synthetic demonstration data."}
-        <span className="mt-1 block text-muted">Open the methodology page for data modes.</span>
+        {mode?.fallback_reason ||
+          "The live lab queries ASF for NISAR records and measures Sentinel-1 change. Dashboard and timeline pages read the bundled demo dataset."}
+        <span className="mt-1 block text-muted">Sources and caveats are listed on the methodology page.</span>
       </TooltipContent>
     </Tooltip>
   );
