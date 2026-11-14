@@ -60,7 +60,7 @@ export default function MethodologyPage() {
     <div className="container-page py-8 lg:py-10">
       <PageHeader
         eyebrow="Methodology & data policy"
-        title="What TerraPulse measures — and what it does not"
+        title="What TerraPulse measures, and its limits"
         description="A plain-language account of the radar physics, the processing pipeline, the data modes, the meaning of the outputs and the limits that judges, scientists and users should keep in view."
         actions={
           <Badge variant="amber">SYNTHETIC DEMO DATASET</Badge>

@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 
 const links = [
+  { href: "/live", label: "Live lab" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/map", label: "Map" },
   { href: "/analysis", label: "Analysis" },
@@ -26,13 +27,13 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Logo />
             <p className="max-w-sm text-xs leading-relaxed text-muted">
-              TerraPulse is a demonstration Earth Surface Intelligence Platform built for the
-              NASA Space Apps Challenge. It explores how NISAR-style SAR observations can be turned
-              into understandable surface-change insights.
+              TerraPulse is a submission for the NASA Space Apps Challenge. The live lab queries
+              the NISAR catalogue from ASF and measures change on Sentinel-1 scenes. The dashboard
+              and timeline read a bundled demo dataset.
             </p>
             <p className="max-w-sm rounded-md border border-amber/20 bg-amber/[0.05] px-3 py-2 font-mono text-[11px] leading-relaxed tracking-wide text-amber/90">
-              DEMO DATASET · Synthetic radar backscatter with real coordinates. Not a NISAR
-              acquisition. Not for operational or safety decisions.
+              Readings are screening signals. Not a flood map, not a calibrated NISAR product,
+              not for operational or safety decisions.
             </p>
           </div>
 
@@ -72,8 +73,9 @@ export function SiteFooter() {
               ))}
             </ul>
             <p className="mt-4 text-[11px] leading-relaxed text-muted">
-              Basemap imagery: Esri World Imagery (Esri, Maxar, Earthstar Geographics) and CARTO.
-              Map data © OpenStreetMap contributors. Optional live metadata: ASF DAAC / NASA CMR.
+              Basemap imagery: NASA GIBS (MODIS Terra, daily), Esri World Imagery, and CARTO.
+              Live catalogue: ASF DAAC. Change scenes: Copernicus Sentinel-1 via Earth Search on
+              AWS Open Data.
             </p>
           </div>
         </div>

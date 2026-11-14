@@ -8,11 +8,11 @@ import { SiteFooter } from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "TerraPulse — Earth Surface Intelligence",
+    default: "TerraPulse · Live SAR change lab",
     template: "%s · TerraPulse",
   },
   description:
-    "Understand Earth's changes before they become disasters. An interactive SAR surface-intelligence platform built for the NASA Space Apps Challenge, using clearly labelled synthetic demo data and NISAR-ready architecture.",
+    "Query the NISAR catalogue from ASF and measure surface change on real Sentinel-1 radar scenes. Built for the NASA Space Apps Challenge.",
   keywords: ["NASA", "NISAR", "SAR", "remote sensing", "flood", "wetland", "Earth observation"],
   applicationName: "TerraPulse",
   authors: [{ name: "TerraPulse team" }],
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
-    title: "TerraPulse — Earth Surface Intelligence",
+    title: "TerraPulse · Live SAR change lab",
     description:
-      "Understand Earth's changes before they become disasters. Interactive SAR change analysis inspired by NASA-ISRO NISAR.",
+      "NISAR catalogue records from ASF and live Sentinel-1 change comparisons, in one interface.",
     type: "website",
   },
 };

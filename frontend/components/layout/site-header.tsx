@@ -55,7 +55,7 @@ export function SiteHeader() {
             href="/dashboard"
             className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
           >
-            Launch console
+            Open live lab
             <ArrowUpRight className="size-3.5" />
           </Link>
           <button
@@ -104,7 +104,7 @@ export function SiteHeader() {
                   onClick={() => setOpen(false)}
                   className={cn(buttonVariants({ size: "sm" }))}
                 >
-                  Launch console
+                  Open live lab
                 </Link>
               </div>
             </nav>
