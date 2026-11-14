@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { IntroFilm } from "@/components/landing/intro-film";
 import { LandingStats } from "@/components/landing/landing-stats";
 import { LiveNisarFeed } from "@/components/landing/live-nisar-feed";
+import { TourButton } from "@/components/tour/tour-button";
 import { ScenarioCards } from "@/components/landing/scenario-cards";
 import { Reveal } from "@/components/landing/reveal";
 import { cn } from "@/lib/utils";
@@ -44,91 +46,140 @@ function SectionHeading({
 export default function LandingPage() {
   return (
     <div>
-      <section className="relative isolate overflow-hidden">
-        <div className="aurora" aria-hidden="true" />
-        <div className="pointer-events-none absolute inset-0 grid-surface opacity-25" aria-hidden="true" />
-        <div className="container-page relative grid grid-cols-1 items-start gap-10 pb-14 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-20 lg:pt-14">
-        <div className="space-y-6">
-          <Reveal>
-            <div className="flex flex-wrap items-center gap-2">
-              <a
-                href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[0.6875rem] font-medium tracking-wide text-accent-soft transition-colors hover:border-accent/60 hover:bg-accent/15"
-              >
-                <Satellite className="size-3" />
-                NASA Space Apps 2026 · Dancing with the SARs
-                <ArrowUpRight className="size-3" />
-              </a>
-              <Badge variant="teal">
-                <Radar className="size-3" />
-                NISAR catalogue live
-              </Badge>
-              <Badge variant="emerald">Sentinel-1 analysis live</Badge>
-            </div>
-          </Reveal>
+      <section className="relative isolate min-h-[88vh] overflow-hidden border-b border-white/[0.06]">
+        <IntroFilm />
+        <div className="container-page relative flex min-h-[88vh] flex-col justify-end pb-16 pt-28 lg:pb-24">
+          <div className="max-w-2xl space-y-6">
+            <Reveal>
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[0.6875rem] font-medium tracking-wide text-accent-soft backdrop-blur transition-colors hover:border-accent/60 hover:bg-accent/15"
+                >
+                  <Satellite className="size-3" />
+                  NASA Space Apps 2026 · Dancing with the SARs
+                  <ArrowUpRight className="size-3" />
+                </a>
+                <Badge variant="teal" className="backdrop-blur">
+                  <Radar className="size-3" />
+                  NISAR catalogue live
+                </Badge>
+                <Badge variant="emerald" className="backdrop-blur">
+                  Sentinel-1 analysis live
+                </Badge>
+              </div>
+            </Reveal>
 
-          <Reveal delay={0.05}>
-            <div className="space-y-4">
-              <h1 className="max-w-2xl text-[2.5rem] font-semibold leading-[1.06] tracking-[-0.04em] text-foreground sm:text-[3.2rem] lg:text-[3.5rem]">
-                Read surface change with radar,{" "}
-                <span className="text-gradient">day or night</span>.
-              </h1>
-              <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted-strong">
-                TerraPulse queries the ASF catalogue for NISAR acquisitions and measures
-                change between real Sentinel-1 scenes. Pick a monitoring area, compare two
-                passes, and see the backscatter difference, water masks, and vector patches
-                that follow from it.
-              </p>
-            </div>
-          </Reveal>
+            <Reveal delay={0.05}>
+              <div className="space-y-4">
+                <h1 className="max-w-2xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.045em] text-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-[3.4rem] lg:text-[4rem]">
+                  Read surface change with radar,{" "}
+                  <span className="text-gradient">day or night</span>.
+                </h1>
+                <p className="max-w-xl text-[0.9375rem] leading-relaxed text-muted-strong sm:text-base">
+                  TerraPulse queries the ASF catalogue for NISAR acquisitions and measures change
+                  between real Sentinel-1 scenes. Pick an area, compare two passes, and inspect the
+                  backscatter difference, water masks, and vector patches that follow from it.
+                </p>
+              </div>
+            </Reveal>
 
-          <Reveal delay={0.1}>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/live" className={cn(buttonVariants({ size: "lg" }))}>
-                Open the live lab
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link href="/map" className={cn(buttonVariants({ size: "lg", variant: "secondary" }))}>
-                <Layers3 className="size-4" />
-                Browse the map
-              </Link>
-            </div>
-          </Reveal>
+            <Reveal delay={0.1}>
+              <div className="flex flex-wrap items-center gap-3">
+                <TourButton label="Play the tour" />
+                <Link href="/live" className={cn(buttonVariants({ size: "lg", variant: "secondary" }))}>
+                  Open the live lab
+                  <ArrowRight className="size-4" />
+                </Link>
+                <Link
+                  href="/map"
+                  className={cn(buttonVariants({ size: "lg", variant: "ghost" }), "text-muted-strong")}
+                >
+                  <Layers3 className="size-4" />
+                  Browse the map
+                </Link>
+              </div>
+            </Reveal>
 
-          <Reveal delay={0.15}>
-            <div className="grid grid-cols-1 gap-2.5 pt-1 sm:grid-cols-3">
-              {[
-                { icon: Database, text: "NISAR records from ASF, no login" },
-                { icon: ScanLine, text: "Pixel change on Sentinel-1 GRD" },
-                { icon: ShieldCheck, text: "Every source and caveat on screen" },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.text}
-                    className="flex items-start gap-2 text-[11px] leading-snug text-muted"
-                  >
-                    <Icon className="mt-0.5 size-3.5 shrink-0 text-accent" />
-                    {item.text}
-                  </div>
-                );
-              })}
-            </div>
-          </Reveal>
-        </div>
-
-        <Reveal delay={0.12}>
-          <div className="glow-ring rounded-[var(--radius-lg)]">
-            <LiveNisarFeed />
+            <Reveal delay={0.16}>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/[0.08] pt-4">
+                {[
+                  { icon: Database, text: "NISAR records from ASF, no login" },
+                  { icon: ScanLine, text: "Pixel change on Sentinel-1 GRD" },
+                  { icon: ShieldCheck, text: "Every source and caveat on screen" },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.text}
+                      className="flex items-center gap-1.5 text-[11px] leading-snug text-muted"
+                    >
+                      <Icon className="size-3.5 shrink-0 text-accent" />
+                      {item.text}
+                    </div>
+                  );
+                })}
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
         </div>
       </section>
 
-      <div className="container-page pb-16">
-        <LandingStats />
+      <section className="container-page -mt-10 relative z-10">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {[
+            {
+              href: "/live",
+              icon: Radar,
+              title: "Run a comparison",
+              body: "Two Sentinel-1 passes, measured on demand.",
+            },
+            {
+              href: "/map",
+              icon: Layers3,
+              title: "Open the map",
+              body: "Live NISAR footprints over NASA GIBS imagery.",
+            },
+            {
+              href: "/timeline",
+              icon: CalendarClock,
+              title: "Track acquisitions",
+              body: "Every pass and catalogue record for an area.",
+            },
+          ].map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Reveal key={item.href} delay={index * 0.04}>
+                <Link
+                  href={item.href}
+                  className="panel panel-hover group flex items-center gap-4 p-4"
+                >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-accent/20 bg-accent/[0.08]">
+                    <Icon className="size-4 text-accent" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="mt-0.5 text-[11px] text-muted">{item.body}</p>
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
+                </Link>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="container-page pt-10 pb-16">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <Reveal>
+            <LiveNisarFeed />
+          </Reveal>
+          <Reveal delay={0.06}>
+            <LandingStats />
+          </Reveal>
+        </div>
       </div>
 
       <section className="section-band">

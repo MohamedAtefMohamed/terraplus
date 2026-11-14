@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Compass, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
+import { useTour } from "@/components/tour/guided-tour";
 
 const NAV = [
   { href: "/live", label: "Live lab" },
@@ -22,6 +23,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const tour = useTour();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-background/70 backdrop-blur-2xl">
@@ -51,6 +53,14 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => tour.open(true)}
+            className="hidden items-center gap-1.5 rounded-full border border-line-strong bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-muted-strong transition-colors hover:border-accent/40 hover:text-foreground sm:inline-flex"
+          >
+            <Compass className="size-3.5 text-accent" />
+            Take the tour
+          </button>
           <Link
             href="/live"
             className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
@@ -98,6 +108,16 @@ export function SiteHeader() {
                 );
               })}
               <div className="mt-2 flex items-center justify-between border-t border-line pt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    tour.open(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-strong"
+                >
+                  <Compass className="size-3.5 text-accent" /> Take the tour
+                </button>
                 <Link
                   href="/live"
                   onClick={() => setOpen(false)}

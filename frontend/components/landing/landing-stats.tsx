@@ -42,7 +42,7 @@ export function LandingStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-4">
+    <div className="grid h-full grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
       {stats.map((item) => {
         const Icon = item.icon;
         return (

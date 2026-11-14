@@ -16,6 +16,12 @@ Live data sources:
 > **Data notice**
 > Every number on the site comes from a live source: NISAR catalogue records from ASF, Sentinel-1 pixel comparisons, or NASA GIBS basemap tiles. No synthetic dataset is generated. The app is not an operational, emergency, or safety product.
 
+## Landing film and guided tour
+
+- `frontend/public/media/intro.mp4` is a 20-second, silent, self-hosted film assembled from live NISAR browse imagery and a real Sentinel-1 comparison (Atchafalaya Basin, 14 → 26 Oct 2026).
+- `frontend/public/media/intro-poster.jpg` is the poster frame; the hero video pauses automatically for `prefers-reduced-motion`.
+- The guided tour (`components/tour/guided-tour.tsx`) walks through the catalogue, comparison, change map, timeline, and interpretation screens. It supports autoplay, keyboard navigation, and deep links into each page.
+
 ## Live pipeline
 
 - `GET /api/live/nisar` queries ASF for NISAR granules and returns product level, orbit direction, track and frame, footprints, and official browse imagery.
