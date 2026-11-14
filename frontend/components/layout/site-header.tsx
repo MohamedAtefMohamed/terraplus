@@ -15,6 +15,7 @@ const NAV = [
   { href: "/map", label: "Map explorer" },
   { href: "/analysis", label: "Change analysis" },
   { href: "/timeline", label: "Timeline" },
+  { href: "/insights", label: "Interpretation" },
   { href: "/methodology", label: "Methodology" },
 ];
 

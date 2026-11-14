@@ -13,7 +13,7 @@ export default function NotFound() {
         <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">404</p>
         <h1 className="mt-2 text-xl font-semibold">No observation at these coordinates</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          The page you requested is outside the TerraPulse demo footprint.
+          The page you requested does not exist.
         </p>
         <Link href="/dashboard" className={cn(buttonVariants(), "mt-6")}>
           Return to dashboard

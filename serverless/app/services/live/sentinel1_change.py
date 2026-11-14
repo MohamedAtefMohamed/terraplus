@@ -53,7 +53,15 @@ def _normalize_scene(feature: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_SCENE_CACHE: dict[tuple, tuple[float, list[dict[str, Any]]]] = {}
+_SCENE_TTL = 180.0
+
+
 def search_scenes(bbox: list[float], days: int = 90, limit: int = 80) -> list[dict[str, Any]]:
+    cache_key = (tuple(round(value, 4) for value in bbox), days, limit)
+    cached = _SCENE_CACHE.get(cache_key)
+    if cached and time.time() - cached[0] < _SCENE_TTL:
+        return cached[1]
     days = max(7, min(days, 365))
     end = datetime.now(UTC)
     body = {
@@ -76,7 +84,9 @@ def search_scenes(bbox: list[float], days: int = 90, limit: int = 80) -> list[di
         raise LiveChangeError(f"Earth Search returned HTTP {response.status_code}.")
     features = (response.json() or {}).get("features") or []
     scenes = [_normalize_scene(feature) for feature in features]
-    return [scene for scene in scenes if scene.get("vv_href")]
+    result = [scene for scene in scenes if scene.get("vv_href")]
+    _SCENE_CACHE[cache_key] = (time.time(), result)
+    return result
 
 
 def pick_pair(scenes: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, Any]]:

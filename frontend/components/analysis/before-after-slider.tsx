@@ -25,7 +25,7 @@ export function BeforeAfterSlider({
       <div className="relative aspect-[16/9] select-none">
         <img
           src={assetUrl(afterUrl) || ""}
-          alt={`Later demonstration scene, ${afterDate}`}
+          alt={`Later radar scene, ${afterDate}`}
           className="absolute inset-0 size-full object-cover"
           draggable={false}
         />
@@ -35,7 +35,7 @@ export function BeforeAfterSlider({
         >
           <img
             src={assetUrl(beforeUrl) || ""}
-            alt={`Earlier demonstration scene, ${beforeDate}`}
+            alt={`Earlier radar scene, ${beforeDate}`}
             className="absolute inset-0 size-full object-cover"
             draggable={false}
           />
@@ -60,7 +60,7 @@ export function BeforeAfterSlider({
             isSynthetic ? "bg-amber/10 text-amber" : "bg-emerald/10 text-emerald"
           }`}
         >
-          {isSynthetic ? "Synthetic demo backscatter" : "Staged sample scene · attributed"}
+          {isSynthetic ? "Synthetic scene" : "Sentinel-1 GRD · live"}
         </div>
 
         <input

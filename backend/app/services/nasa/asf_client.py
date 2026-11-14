@@ -42,6 +42,14 @@ async def search_asf(
             error="Invalid bounding box. Expected [west, south, east, north].",
             endpoint=settings.asf_search_url,
         )
+    west, south, east, north = bbox
+    if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
+        return DiscoveryResult(
+            provider="ASF",
+            ok=False,
+            error="Invalid bounding box. Coordinates are outside valid longitude/latitude bounds.",
+            endpoint=settings.asf_search_url,
+        )
 
     limit = min(
         max_results or settings.live_search_max_results,

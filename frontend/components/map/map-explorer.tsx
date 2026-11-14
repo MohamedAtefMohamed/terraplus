@@ -412,10 +412,7 @@ export function MapExplorer() {
                   <LegendRow color="#34d399" label="NISAR metadata footprint" />
                 ) : null}
                 {visibility.radar_observations ? (
-                  <LegendRow
-                    color="#22d3ee"
-                    label={location?.is_demo === false ? "Sample observations" : "Demo observations"}
-                  />
+                  <LegendRow color="#22d3ee" label="NISAR acquisitions" />
                 ) : null}
                 {visibility.wetland_monitoring ? (
                   <LegendRow color="#34d399" label="Monitoring areas" />
@@ -431,11 +428,7 @@ export function MapExplorer() {
             ) : null}
             <MapStatusHint
               note={
-                liveVisible
-                  ? "NISAR footprints = real granule metadata · not processed"
-                  : location?.is_demo === false
-                    ? "Staged sample footprint · attributed"
-                    : undefined
+                liveVisible ? "NISAR footprints · live catalogue records" : undefined
               }
             />
             <div className="pointer-events-none absolute bottom-2 right-3 z-10 rounded border border-line bg-[#07101c]/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
@@ -458,19 +451,11 @@ export function MapExplorer() {
               <p className="eyebrow">Map explorer</p>
               <h1 className="mt-1 text-lg font-semibold tracking-tight">Observation lens</h1>
             </div>
-            <Badge
-              variant={
-                locationsQuery.data?.some((item) => !item.is_demo) ? "emerald" : "amber"
-              }
-            >
-              {locationsQuery.data?.some((item) => !item.is_demo)
-                ? "MIXED · DEMO + SAMPLE"
-                : "DEMO · SYNTHETIC"}
-            </Badge>
+            <Badge variant="emerald">LIVE · NISAR + SENTINEL-1</Badge>
           </div>
           <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-            Pan, zoom, select an area, filter dates and toggle derived layers. Footprints are
-            example monitoring areas, not real satellite coverage.
+            Pan, zoom, select an area, filter dates, and toggle catalogue and change layers.
+            Footprints and previews are live NISAR catalogue records.
           </p>
         </div>
 
@@ -562,7 +547,7 @@ export function MapExplorer() {
                   {nearest ? (
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <p className="text-[10px] text-muted">
-                        Nearest demo area: {nearest.location.name} · {formatNumber(nearest.distance, 0)} km
+                        Nearest monitoring area: {nearest.location.name} · {formatNumber(nearest.distance, 0)} km
                       </p>
                       <Button
                         size="sm"
@@ -623,7 +608,7 @@ export function MapExplorer() {
                   <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                     Observations ({locationObservations.length})
                   </p>
-                  <span className="font-mono text-[10px] text-muted">VV · demo</span>
+                  <span className="font-mono text-[10px] text-muted">NISAR catalogue</span>
                 </div>
                 {observationsQuery.isLoading ? (
                   <div className="space-y-2">
@@ -659,11 +644,11 @@ export function MapExplorer() {
                             {formatDate(observation.acquired_at)}
                           </p>
                           <p className="font-mono text-[10px] text-muted">
-                            {observation.external_id.split("-").slice(-1)[0]} · {observation.polarization} · 4-look
+                            {observation.product_type} · {observation.polarization}
                           </p>
                         </div>
-                        <Badge variant="amber" className="text-[10px]">
-                          DEMO
+                        <Badge variant="emerald" className="text-[10px]">
+                          LIVE
                         </Badge>
                       </button>
                     ))}
@@ -672,7 +657,7 @@ export function MapExplorer() {
                   <EmptyState
                     icon={CalendarDays}
                     title="No observations in this range"
-                    description="Adjust the date filter or reset it to show the full demonstration record."
+                    description="Adjust the date filter or reset it to show the full acquisition record."
                     action={
                       <Button size="sm" variant="outline" onClick={resetDates}>
                         <RotateCcw className="size-3" /> Reset dates
@@ -698,7 +683,7 @@ export function MapExplorer() {
                     </div>
                     <img
                       src={assetUrl(selectedObservation.preview_url) || ""}
-                      alt="Selected demo backscatter scene"
+                      alt="Selected acquisition preview"
                       className="size-16 rounded border border-line object-cover"
                     />
                   </div>
@@ -912,14 +897,14 @@ export function MapExplorer() {
                   </div>
                   <div className="flex justify-between">
                     <span>Data mode</span>
-                    <span className="text-amber">demo</span>
+                    <span className="text-emerald">live</span>
                   </div>
                 </div>
               </div>
 
-              <Callout tone="info" title="Why these layers are conceptual">
+              <Callout tone="info" title="About these layers">
                 {layersQuery.data?.disclaimer ||
-                  "Footprints and overlays are demonstrations, not real NISAR coverage."}
+                  "NISAR footprints are live catalogue metadata. Change overlays appear after a live Sentinel-1 comparison."}
               </Callout>
             </TabsContent>
 
@@ -934,8 +919,8 @@ export function MapExplorer() {
                   </Badge>
                 </div>
                 <p className="mt-2 text-[11px] leading-relaxed text-muted">
-                  Queries real granule metadata through the ASF DAAC. No product is downloaded or
-                  processed by this MVP. Authenticated Earthdata access is required for that.
+                  Queries real granule records through the ASF DAAC. Browse imagery is a quick-look;
+                  product download requires Earthdata Login and is not performed here.
                 </p>
                 <div className="mt-2 space-y-1 font-mono text-[10.5px] text-muted">
                   <p>BBOX · {(location?.bbox || []).join(", ") || "select an area"}</p>
@@ -984,7 +969,7 @@ export function MapExplorer() {
                 <EmptyState
                   icon={MapPin}
                   title="Select a monitoring area"
-                  description="Live discovery uses the bounding box of the selected demonstration area."
+                  description="Live discovery uses the bounding box of the selected monitoring area."
                 />
               ) : null}
 
@@ -1092,7 +1077,7 @@ export function MapExplorer() {
                   </div>
                   <div className="flex justify-between">
                     <span>Analysis mode</span>
-                    <span className="text-amber">demo fallback</span>
+                    <span className="text-emerald">live Sentinel-1</span>
                   </div>
                 </div>
               </div>

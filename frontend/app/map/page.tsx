@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const metadata: Metadata = {
   title: "Map explorer",
   description:
-    "Explore demonstration monitoring footprints, filter observation dates, toggle change layers and query live NISAR granule metadata.",
+    "Explore live NISAR footprints, filter acquisition dates, toggle change layers, and inspect catalogue records.",
 };
 
 export default function MapPage() {

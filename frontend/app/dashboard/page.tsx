@@ -3,7 +3,7 @@ import { DashboardView } from "@/components/dashboard/dashboard-view";
 
 export const metadata: Metadata = {
   title: "Intelligence dashboard",
-  description: "Live demonstration overview of monitored areas, observations, change analyses and environmental indicators.",
+  description: "Live NISAR catalogue counts, monitored areas, and cached Sentinel-1 change summaries.",
 };
 
 export default function DashboardPage() {

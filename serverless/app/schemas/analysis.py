@@ -140,6 +140,7 @@ class TimelineOut(BaseModel):
     data_mode: str
     is_synthetic: bool
     generated_at: datetime
+    nisar: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class DashboardOut(BaseModel):

@@ -36,7 +36,8 @@ def _cache_key(bbox: list[float] | None, start: str | None, end: str | None, lim
 
 
 def _parse_feature(feature: dict[str, Any]) -> dict[str, Any]:
-    browse = feature.get("browse") or []
+    props = feature.get("properties") or {}
+    browse = props.get("browse") or feature.get("browse") or []
     thumbnail = None
     latlon = None
     for url in browse:
@@ -53,27 +54,58 @@ def _parse_feature(feature: dict[str, Any]) -> dict[str, Any]:
     if ring and isinstance(ring[0], list) and isinstance(ring[0][0], list):
         # MultiPolygon: flatten to the first ring
         ring = ring[0]
-    name = feature.get("granuleName") or feature.get("sceneName") or ""
-    product_level = feature.get("processingLevel") or ""
+    name = (
+        props.get("fileID")
+        or props.get("fileName")
+        or props.get("granuleName")
+        or feature.get("granuleName")
+        or feature.get("sceneName")
+        or feature.get("id")
+        or ""
+    )
+    if name.endswith(".h5"):
+        name = name[:-3]
+    product_level = props.get("processingLevel") or feature.get("processingLevel") or ""
     if not product_level and "_L1_" in name:
         product_level = "L1"
+    if not ring and coordinates:
+        # GeoJSON Polygon coordinates come through as [[[lon, lat], ...]]
+        outer = coordinates[0]
+        if isinstance(outer, list) and outer and isinstance(outer[0], list):
+            ring = outer
+    lats = [point[1] for point in ring if len(point) >= 2]
+    lons = [point[0] for point in ring if len(point) >= 2]
+    center_lat = float(sum(lats) / len(lats)) if lats else None
+    center_lon = float(sum(lons) / len(lons)) if lons else None
+    polarization = props.get("mainBandPolarization") or feature.get("polarization") or []
+    if isinstance(polarization, str):
+        polarization = [polarization]
+    s3 = props.get("s3Urls") or []
+    download_url = (
+        f"https://search.asf.alaska.edu/#/?searchType=Listed&granule={name}"
+        if name
+        else "https://search.asf.alaska.edu/"
+    )
     return {
         "id": name,
-        "platform": feature.get("platform") or "NISAR",
-        "sensor": feature.get("sensor") or "L-SAR",
+        "platform": props.get("platform") or feature.get("platform") or "NISAR",
+        "sensor": props.get("sensor") or feature.get("sensor") or "L-SAR",
         "product_level": product_level,
-        "product_type": feature.get("productType") or ("RSLC" if "RSLC" in name else None),
-        "start": feature.get("startTime"),
-        "end": feature.get("stopTime"),
-        "flight_direction": feature.get("flightDirection"),
-        "track": feature.get("pathNumber") or feature.get("track"),
-        "frame": feature.get("frameNumber"),
-        "polarization": feature.get("polarization") or [],
-        "center_lat": feature.get("centerLat"),
-        "center_lon": feature.get("centerLon"),
+        "product_type": props.get("productType")
+        or feature.get("productType")
+        or (product_level or ("RSLC" if "RSLC" in name else None)),
+        "start": props.get("startTime") or feature.get("startTime"),
+        "end": props.get("stopTime") or feature.get("stopTime"),
+        "flight_direction": props.get("flightDirection") or feature.get("flightDirection"),
+        "track": props.get("pathNumber") or feature.get("pathNumber") or feature.get("track"),
+        "frame": props.get("frameNumber") or feature.get("frameNumber"),
+        "polarization": polarization,
+        "center_lat": props.get("centerLat") or center_lat,
+        "center_lon": props.get("centerLon") or center_lon,
         "browse_thumbnail": thumbnail,
         "browse_latlon": latlon,
-        "download_url": feature.get("downloadUrl"),
+        "download_url": download_url,
+        "s3": s3[0] if s3 else None,
         "footprint": ring,
         "source": "ASF DAAC (NASA Earthdata Cloud)",
     }
@@ -102,7 +134,7 @@ def recent_nisar(
     def _search(polygon: list[float] | None) -> tuple[list[dict[str, Any]], str | None]:
         params: dict[str, Any] = {
             "platform": "NISAR",
-            "output": "json",
+            "output": "geojson",
             "maxResults": limit,
             "start": start_s,
             "end": end_s,
@@ -123,12 +155,15 @@ def recent_nisar(
             logger.warning("ASF NISAR search failed: %s", exc.__class__.__name__)
             return [], "Could not reach the ASF search service."
 
-        rows = payload
-        while isinstance(rows, list) and rows and isinstance(rows[0], list):
-            rows = rows[0]
-        if not isinstance(rows, list):
+        features = payload.get("features") if isinstance(payload, dict) else None
+        if features is None:
+            rows = payload
+            while isinstance(rows, list) and rows and isinstance(rows[0], list):
+                rows = rows[0]
+            features = rows if isinstance(rows, list) else None
+        if not isinstance(features, list):
             return [], "ASF returned an unexpected payload."
-        return [_parse_feature(row) for row in rows if isinstance(row, dict)], None
+        return [_parse_feature(row) for row in features if isinstance(row, dict)], None
 
     items, error = _search(bbox)
     scope = "aoi"
@@ -160,6 +195,37 @@ def recent_nisar(
     }
     _CACHE[key] = (now, result)
     return result
+
+
+def granule_by_name(name: str) -> dict[str, Any] | None:
+    """Fetch one NISAR granule record by name."""
+    settings = get_settings()
+    try:
+        with httpx.Client(timeout=25.0, follow_redirects=True) as client:
+            response = client.get(
+                settings.asf_search_url,
+                params={
+                    "platform": "NISAR",
+                    "granule_list": name,
+                    "output": "geojson",
+                    "maxResults": 5,
+                },
+                headers={"User-Agent": _USER_AGENT, "Accept": "application/json"},
+            )
+        if response.status_code >= 400:
+            return None
+        payload = response.json()
+    except Exception:  # noqa: BLE001
+        return None
+    features = payload.get("features") if isinstance(payload, dict) else None
+    if not features:
+        rows = payload
+        while isinstance(rows, list) and rows and isinstance(rows[0], list):
+            rows = rows[0]
+        features = rows if isinstance(rows, list) else None
+    if not features:
+        return None
+    return _parse_feature(features[0])
 
 
 def nisar_status() -> dict[str, Any]:

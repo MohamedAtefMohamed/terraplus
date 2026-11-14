@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 import uuid
@@ -16,8 +15,6 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
-from app.db.database import SessionLocal, init_db
-from app.db.seed import seed_database
 
 settings = get_settings()
 logger = logging.getLogger("terraplus")
@@ -27,26 +24,14 @@ logger = logging.getLogger("terraplus")
 async def lifespan(_: FastAPI):
     configure_logging()
     settings.ensure_dirs()
-    init_db()
-    try:
-
-        def _seed() -> dict:
-            with SessionLocal() as db:
-                return seed_database(db)
-
-        result = await asyncio.to_thread(_seed)
-        logger.info("Seed result: %s", result, extra={"event": "seed_complete"})
-    except Exception:
-        logger.exception("Demo seeding failed; API will start but demo data may be incomplete")
     yield
 
 
 app = FastAPI(
     title="TerraPulse API",
     description=(
-        "Earth Surface Intelligence Platform API. Bundled observations and analyses are "
-        "synthetic DEMO data. NISAR integration supports live granule metadata discovery; "
-        "authenticated product download and calibration are not enabled in this MVP."
+        "Live SAR surface-change API. NISAR catalogue records and browse imagery come from "
+        "the ASF DAAC. Pixel-level change is measured on public Sentinel-1 GRD scenes."
     ),
     version=settings.version,
     lifespan=lifespan,
@@ -58,14 +43,14 @@ app = FastAPI(
             "description": "Health, configuration and data attribution.",
         },
         {"name": "dashboard", "description": "Aggregated intelligence dashboard."},
-        {"name": "locations", "description": "Monitored demonstration areas."},
+        {"name": "locations", "description": "Real monitoring areas."},
         {
             "name": "observations",
             "description": "Satellite observations and live NASA discovery.",
         },
         {
             "name": "analysis",
-            "description": "Change-detection analysis jobs and explanations.",
+            "description": "Live Sentinel-1 change analyses and explanations.",
         },
         {"name": "timeline", "description": "Temporal analysis."},
         {"name": "map", "description": "Map layer definitions."},

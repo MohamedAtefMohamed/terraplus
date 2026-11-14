@@ -8,7 +8,7 @@ const links = [
   { href: "/map", label: "Map" },
   { href: "/analysis", label: "Analysis" },
   { href: "/timeline", label: "Timeline" },
-  { href: "/insights", label: "Insights" },
+  { href: "/insights", label: "Interpretation" },
   { href: "/methodology", label: "Methodology" },
 ];
 
@@ -31,9 +31,9 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Logo />
             <p className="max-w-sm text-xs leading-relaxed text-muted">
-              TerraPulse is a submission for the NASA Space Apps Challenge. The live lab queries
-              the NISAR catalogue from ASF and measures change on Sentinel-1 scenes. The dashboard
-              and timeline read a bundled demo dataset.
+              TerraPulse is a submission for the NASA Space Apps Challenge. It queries the NISAR
+              catalogue from ASF and measures change on real Sentinel-1 scenes. Everything on the
+              site reads from those live services.
             </p>
           </div>
 

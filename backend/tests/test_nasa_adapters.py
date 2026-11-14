@@ -100,10 +100,10 @@ def test_stac_normalizer_extracts_polarization_and_asset():
     assert item["raster_available"] is False
 
 
-def test_live_search_disabled_is_a_clean_error():
-    result = asyncio.run(search_asf([88.9, 21.7, 89.4, 22.1], start="2026-01-01", end="2026-02-01"))
+def test_live_search_rejects_invalid_bbox_without_network():
+    result = asyncio.run(search_asf([200.0, 10.0, 201.0, 11.0]))
     assert result.ok is False
-    assert result.error and "disabled" in result.error.lower()
+    assert result.error and "bounding box" in result.error.lower()
     assert result.items == []
 
 

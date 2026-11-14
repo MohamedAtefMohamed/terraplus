@@ -268,7 +268,7 @@ export interface Dashboard {
 }
 
 export interface Explanation {
-  mode: "deterministic" | "llm";
+  mode: string;
   engine: string;
   headline: string;
   summary: string;
@@ -279,42 +279,20 @@ export interface Explanation {
     label: string;
     value: number | null;
     unit: string;
-    meaning: string;
+    meaning?: string;
   }>;
   confidence: {
     label: string;
     score: number;
-    rationale: string;
-    important: string;
+    rationale?: string;
+    important?: string;
   };
-  method: {
-    name: string;
-    change_threshold_db: number;
-    water_threshold_db: number;
-    steps: string[];
-  };
-  analysis_period: {
-    before: string;
-    after: string;
-    before_observation_id: number;
-    after_observation_id: number;
-  };
-  source_data: Array<{
-    role: string;
-    observation_id: number;
-    external_id: string;
-    mission: string;
-    instrument: string;
-    product_type: string;
-    acquired_at: string;
-    data_mode: string;
-    is_synthetic: boolean;
-    source_name: string;
-    source_url: string | null;
-  }>;
+  method: Record<string, unknown>;
+  analysis_period: Record<string, unknown>;
+  source_data: Array<Record<string, unknown>>;
   uncertainty: string[];
   limitations: string[];
-  sources: Array<{ name: string; url: string | null; note: string }>;
+  sources: Array<{ name?: string; label?: string; url: string | null; note?: string }>;
   disclaimer: string;
   note?: string | null;
 }
@@ -331,12 +309,7 @@ export interface TimelineObservation {
   is_synthetic: boolean;
   preview_url: string | null;
   days_since_previous: number | null;
-  metrics: {
-    mean_db: number;
-    median_db: number;
-    water_fraction: number;
-    valid_coverage: number;
-  } | null;
+  metrics: Record<string, unknown> | null;
   status: string;
   error: string | null;
 }
@@ -366,6 +339,7 @@ export interface Timeline {
   data_mode: string;
   is_synthetic: boolean;
   generated_at: string;
+  nisar?: LiveNisarGranule[];
 }
 
 export interface LayerDefinition {

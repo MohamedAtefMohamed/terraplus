@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Methodology",
   description:
-    "How TerraPulse works: SAR fundamentals, NISAR context, the change-detection pipeline, data modes, results, limitations and source attribution.",
+    "How TerraPulse works: SAR fundamentals, NISAR context, the live change-detection pipeline, results, limitations, and source attribution.",
 };
 
 const TOC = [
@@ -39,7 +39,7 @@ const TOC = [
   { id: "pipeline", label: "Processing pipeline" },
   { id: "measures", label: "What we measure" },
   { id: "interpretation", label: "Reading results" },
-  { id: "data-modes", label: "Data modes" },
+  { id: "data-modes", label: "Data sources" },
   { id: "limitations", label: "Limitations" },
   { id: "sources", label: "Sources" },
 ];
@@ -62,9 +62,7 @@ export default function MethodologyPage() {
         eyebrow="Methodology & data policy"
         title="What TerraPulse measures, and its limits"
         description="A plain-language account of the radar physics, the processing pipeline, the data modes, the meaning of the outputs and the limits that judges, scientists and users should keep in view."
-        actions={
-          <Badge variant="amber">SYNTHETIC DEMO DATASET</Badge>
-        }
+        actions={<Badge variant="emerald">LIVE DATA PIPELINE</Badge>}
       />
 
       <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -89,8 +87,8 @@ export default function MethodologyPage() {
                 <ShieldAlert className="size-3" /> Data notice
               </p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-                Demo workspace pixels are synthetic. The live lab measures real Sentinel-1
-                scenes. Neither is an operational or safety product.
+                NISAR records and Sentinel-1 pixel comparisons are live. Readings are screening
+                signals, not an operational or safety product.
               </p>
             </div>
           </div>
@@ -108,33 +106,32 @@ export default function MethodologyPage() {
                 one interface.
               </p>
               <p>
-                Two pipelines run side by side. The <strong className="text-foreground">live lab</strong>{" "}
-                reads the NISAR catalogue from ASF and computes change on public Sentinel-1 GRD
-                scenes, with no account and no full-scene download. The{" "}
-                <strong className="text-foreground">demo workspace</strong> keeps a deterministic
-                synthetic dataset for dashboard, timeline, and explanation features when the network
-                is unavailable. Every screen states which pipeline produced the numbers.
+                The pipeline is live end to end. The{" "}
+                <strong className="text-foreground">live lab</strong> reads the NISAR catalogue from
+                ASF and computes change on public Sentinel-1 GRD scenes, with no account and no
+                full-scene download. The dashboard, timeline, map, and interpretation pages read
+                from the same sources or from comparisons cached in the live lab.
               </p>
             </div>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 {
-                  icon: FlaskConical,
-                  title: "DEMO",
-                  body: "Synthetic but physically shaped. Always available offline.",
-                  tone: "amber" as const,
-                },
-                {
-                  icon: Database,
-                  title: "SAMPLE",
-                  body: "Manifest-driven real sample products. Not staged in this build.",
-                  tone: "accent" as const,
-                },
-                {
                   icon: Satellite,
-                  title: "LIVE",
-                  body: "NISAR catalogue from ASF. Sentinel-1 change reads, computed on demand.",
+                  title: "NISAR catalogue",
+                  body: "Real granule records and browse quick-looks from the ASF DAAC.",
                   tone: "emerald" as const,
+                },
+                {
+                  icon: Radar,
+                  title: "Sentinel-1 change",
+                  body: "Windowed COG reads on public GRD scenes, computed on demand.",
+                  tone: "teal" as const,
+                },
+                {
+                  icon: Layers3,
+                  title: "NASA GIBS",
+                  body: "Daily MODIS Terra optical basemap for context.",
+                  tone: "accent" as const,
                 },
               ].map((item) => {
                 const Icon = item.icon;
@@ -391,30 +388,30 @@ export default function MethodologyPage() {
 
           <section className="scroll-mt-24">
             <H2 id="data-modes" eyebrow="07 · Transparency">
-              Data modes and fallback policy
+              Data sources and refresh policy
             </H2>
             <div className="mt-4 space-y-3">
               {[
                 {
-                  icon: FlaskConical,
-                  name: "DEMO",
-                  badge: "amber" as const,
-                  status: "Active · always available",
-                  body: "Three demonstration regions are generated locally at four dates each. Scenes carry full GeoTIFF metadata, real EPSG:4326 footprints, synthetic VV dB backscatter, four-look speckle and nodata. Generated scene tags explicitly state that the data is synthetic.",
+                  icon: Satellite,
+                  name: "ASF DAAC",
+                  badge: "emerald" as const,
+                  status: "No credentials",
+                  body: "Granule records, footprints, and browse quick-looks for NISAR. Catalogue queries are cached for four minutes per bounding box.",
                 },
                 {
                   icon: Database,
-                  name: "SAMPLE",
-                  badge: "accent" as const,
-                  status: "Adapter ready · not staged",
-                  body: "A manifest at data/sample/manifest.json can register properly attributed real sample rasters. This build contains none. If SAMPLE is requested without a manifest, the app falls back to DEMO and displays that fallback rather than mislabelling data.",
+                  name: "Earth Search",
+                  badge: "teal" as const,
+                  status: "AWS Open Data",
+                  body: "Sentinel-1 GRD STAC index. Scene searches are cached for three minutes; change results are cached for six hours per area and threshold.",
                 },
                 {
-                  icon: Satellite,
-                  name: "LIVE",
-                  badge: "emerald" as const,
-                  status: "Catalogue and change analysis enabled",
-                  body: "The ASF DAAC search adapter returns real NISAR granule records with browse imagery. The change endpoint pairs Sentinel-1 GRD scenes on the same relative orbit and reads decimated windows over HTTPS. Results cache for six hours per area and parameter set.",
+                  icon: Layers3,
+                  name: "NASA GIBS",
+                  badge: "accent" as const,
+                  status: "Daily tiles",
+                  body: "MODIS Terra corrected reflectance for the map basemap. The date is always yesterday in UTC.",
                 },
               ].map((mode) => {
                 const Icon = mode.icon;
@@ -434,8 +431,8 @@ export default function MethodologyPage() {
                 );
               })}
               <Callout tone="info" title="Attribution rule">
-                TerraPulse never labels Sentinel-1, synthetic data or unrelated products as NISAR.
-                The mission name is used only for mission context and live metadata discovery.
+                TerraPulse never labels Sentinel-1 pixels as NISAR. Every result states its
+                sensor, scene identifiers, and processing parameters.
               </Callout>
             </div>
           </section>
@@ -449,11 +446,11 @@ export default function MethodologyPage() {
                 "A backscatter change does not identify a cause.",
                 "Surface roughness, vegetation, soil moisture and acquisition geometry can mimic a water signal.",
                 "Live comparisons use Sentinel-1 C-band VV with no incidence-angle normalisation.",
-                "The 5×5 median filter is a screening choice, not a validated speckle workflow.",
+                "The 3×3 median filter is a screening choice, not a validated speckle workflow.",
                 "Thresholds are configurable screens, not universal constants.",
                 "No optical, gauge or field validation is performed.",
-                "Demo workspace scenes are synthetic and must not be cited as real events.",
                 "NISAR L-band pixels are not processed yet; live change uses Sentinel-1 C-band.",
+                "Catalogue availability reflects what ASF has published, not a guarantee of future coverage.",
                 "The processing-quality score is not an event probability.",
                 "The application is not an emergency, safety or operational product.",
               ].map((item) => (
@@ -504,19 +501,24 @@ export default function MethodologyPage() {
                       href: "https://science.nasa.gov/mission/nisar/sample-data/",
                     },
                     {
-                      name: "Esri World Imagery",
-                      use: "Optional satellite basemap context",
-                      href: "https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9",
+                      name: "Element 84 Earth Search",
+                      use: "Sentinel-1 GRD STAC index",
+                      href: "https://earth-search.aws.element84.com/v1",
                     },
                     {
-                      name: "CARTO / OpenStreetMap",
-                      use: "Optional dark basemap tiles",
-                      href: "https://carto.com/attributions",
+                      name: "AWS Open Data · sentinel-s1-l1c",
+                      use: "Cloud-optimized Sentinel-1 GRD scenes",
+                      href: "https://registry.opendata.aws/sentinel-1/",
                     },
                     {
-                      name: "TerraPulse demo generator",
-                      use: "Synthetic SAR scenes and analysis products",
-                      href: "#overview",
+                      name: "NASA GIBS",
+                      use: "Daily optical basemap",
+                      href: "https://gibs.earthdata.nasa.gov/",
+                    },
+                    {
+                      name: "Space Apps 2026 challenge",
+                      use: "Challenge brief and NASA resources",
+                      href: "https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/?tab=resources",
                     },
                   ].map((row) => (
                     <tr key={row.name} className="border-b border-line/60 last:border-0">
@@ -538,9 +540,9 @@ export default function MethodologyPage() {
               </table>
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-muted">
-              Built with Next.js, FastAPI, MapLibre GL, Rasterio, NumPy, SciPy, Shapely and
-              Recharts. The change-detection engine is original demonstration software and is not a
-              NASA product. NISAR and NASA imagery remain subject to their respective terms.
+              Built with Next.js, FastAPI, MapLibre GL, Rasterio, NumPy, SciPy, and Shapely.
+              The change-detection engine is original software and is not a NASA product. NISAR
+              and NASA imagery remain subject to their respective terms.
             </p>
           </section>
 
@@ -552,10 +554,10 @@ export default function MethodologyPage() {
                   <BookOpen className="size-3" /> Ready to inspect
                 </p>
                 <h2 className="mt-1.5 text-lg font-semibold text-foreground">
-                  See the method in action on the demo dataset
+                  See the method on a live comparison
                 </h2>
                 <p className="mt-1 text-[11px] text-muted">
-                  Compare the Sundarbans scenes, then read the explanation and its limitations.
+                  Compare a delta or basin, then read the interpretation and its limits.
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
