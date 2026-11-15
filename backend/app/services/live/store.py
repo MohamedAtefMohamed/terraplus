@@ -129,25 +129,13 @@ def granule_to_observation(granule: dict[str, Any]) -> dict[str, Any]:
 # Counting granules per area costs one ASF query per area, which is far too slow
 # to do inline. The list renders immediately and a background warm pass fills the
 # counts in; clients poll until every area has a value.
-_CATALOGUE_LIMIT = 250
-_COUNT_TTL = 1800.0
-_LOCATIONS_TTL = 120.0
+_CATALOGUE_LIMIT = 60
+_COUNT_TTL = 21600.0  # 6 h: catalogue counts change slowly
+_LOCATIONS_TTL = 300.0
 _LOCATIONS_CACHE: tuple[float, list[dict[str, Any]]] | None = None
 _COUNT_CACHE: dict[str, tuple[float, int, bool]] = {}
 _COUNT_LOCK = threading.Lock()
 _WARMING = False
-
-
-def _area_catalogue_count(area: Area) -> tuple[int, bool]:
-    """Distinct acquisition days in the last 90 days, plus whether the cap was hit.
-
-    Counting days rather than granule rows avoids triple-counting RSLC/GSLC/GCOV
-    products for the same pass, and it does not saturate for every area.
-    """
-    catalogue = recent_nisar(bbox=area.bbox, days=90, limit=_CATALOGUE_LIMIT)
-    items = catalogue.get("items", [])
-    days = {item.get("start", "")[:10] for item in items if item.get("start")}
-    return len(days), len(items) >= _CATALOGUE_LIMIT
 
 
 def _cached_count(area: Area) -> tuple[int, bool] | None:
@@ -158,22 +146,61 @@ def _cached_count(area: Area) -> tuple[int, bool] | None:
     return None
 
 
-def _warm_counts() -> None:
+def _area_catalogue(area: Area) -> dict[str, Any]:
+    """One catalogue query per area, feeding both the count and the thumbnail.
+
+    Counting distinct acquisition days avoids triple-counting RSLC/GSLC/GCOV
+    products for the same pass, and it does not saturate for every area.
+    """
+    try:
+        catalogue = recent_nisar(bbox=area.bbox, days=90, limit=_CATALOGUE_LIMIT)
+    except Exception:  # noqa: BLE001
+        return {"slug": area.slug, "days": None, "capped": False, "thumbnail": None,
+                "preview": None, "start": None, "id": None, "product_level": None}
+    items = catalogue.get("items", [])
+    latest = items[0] if items else None
+    days = {item.get("start", "")[:10] for item in items if item.get("start")}
+    return {
+        "slug": area.slug,
+        "days": len(days) if items else 0,
+        "capped": len(items) >= _CATALOGUE_LIMIT,
+        "thumbnail": (latest.get("browse_thumbnail") or latest.get("browse_latlon")) if latest else None,
+        "preview": (latest.get("browse_latlon") or latest.get("browse_thumbnail")) if latest else None,
+        "start": latest.get("start") if latest else None,
+        "id": latest.get("id") if latest else None,
+        "product_level": latest.get("product_level") if latest else None,
+    }
+
+
+def _warm_areas() -> None:
+    """Warm counts and browse thumbnails incrementally.
+
+    ASF rate-limits aggressive parallelism, so the pass runs three queries at a
+    time and publishes each result as soon as it lands; the UI polls and fills
+    in progressively rather than waiting for all fifteen.
+    """
     global _WARMING
     with _COUNT_LOCK:
         if _WARMING:
             return
         _WARMING = True
     try:
-        with ThreadPoolExecutor(max_workers=8) as pool:
-            results = list(pool.map(_area_catalogue_count, AREAS))
-        stamp = time.monotonic()
-        with _COUNT_LOCK:
-            for area, result in zip(AREAS, results, strict=True):
-                days, capped = result
-                _COUNT_CACHE[area.slug] = (stamp, days, capped)
-    except Exception:  # noqa: BLE001
-        pass
+        from concurrent.futures import as_completed
+
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            futures = {pool.submit(_area_catalogue, area): area for area in AREAS}
+            for future in as_completed(futures):
+                try:
+                    row = future.result()
+                except Exception:  # noqa: BLE001
+                    continue
+                stamp = time.monotonic()
+                with _COUNT_LOCK:
+                    _COUNT_CACHE[row["slug"]] = (stamp, row["days"], row["capped"])
+                    known = {item["slug"]: item for item in _THUMB_ROWS}
+                    known[row["slug"]] = row
+                    _THUMB_ROWS[:] = [known[a.slug] for a in AREAS if a.slug in known]
+                    _THUMB_STAMP[0] = stamp
     finally:
         with _COUNT_LOCK:
             _WARMING = False
@@ -404,51 +431,16 @@ def _analysis_detail(area: Area, summary: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-_THUMB_TTL = 600.0
-_THUMB_CACHE: tuple[float, list[dict[str, Any]]] | None = None
-_THUMB_LOCK = threading.Lock()
-_THUMB_WARMING = False
-
-
-def _warm_thumbnails() -> None:
-    global _THUMB_CACHE, _THUMB_WARMING
-    with _THUMB_LOCK:
-        if _THUMB_WARMING:
-            return
-        _THUMB_WARMING = True
-
-    def one(area: Area) -> dict[str, Any]:
-        try:
-            catalogue = recent_nisar(bbox=area.bbox, days=365, limit=1)
-            items = catalogue.get("items") or []
-            item = items[0] if items else None
-        except Exception:  # noqa: BLE001
-            item = None
-        return {
-            "slug": area.slug,
-            "id": item.get("id") if item else None,
-            "start": item.get("start") if item else None,
-            "thumbnail": (item.get("browse_thumbnail") or item.get("browse_latlon")) if item else None,
-            "preview": (item.get("browse_latlon") or item.get("browse_thumbnail")) if item else None,
-            "product_level": item.get("product_level") if item else None,
-        }
-
-    try:
-        with ThreadPoolExecutor(max_workers=8) as pool:
-            rows = list(pool.map(one, AREAS))
-        with _THUMB_LOCK:
-            _THUMB_CACHE = (time.monotonic(), rows)
-    finally:
-        with _THUMB_LOCK:
-            _THUMB_WARMING = False
+_THUMB_TTL = 21600.0  # 6 h
+_THUMB_ROWS: list[dict[str, Any]] = []
+_THUMB_STAMP: list[float] = [0.0]
 
 
 def area_thumbnails() -> list[dict[str, Any]]:
-    """Latest browse quick-look per area; warmed in the background on first use."""
-    now = time.monotonic()
-    if _THUMB_CACHE and now - _THUMB_CACHE[0] < _THUMB_TTL:
-        return _THUMB_CACHE[1]
-    threading.Thread(target=_warm_thumbnails, daemon=True).start()
+    """Latest browse quick-look per area; filled by the shared warm pass."""
+    if _THUMB_ROWS and time.monotonic() - _THUMB_STAMP[0] < _THUMB_TTL:
+        return list(_THUMB_ROWS)
+    threading.Thread(target=_warm_areas, daemon=True).start()
     return []
 
 
@@ -466,7 +458,7 @@ def list_locations() -> list[dict[str, Any]]:
     if all(row["observation_count"] is not None for row in payload):
         _LOCATIONS_CACHE = (now, payload)
     else:
-        threading.Thread(target=_warm_counts, daemon=True).start()
+        threading.Thread(target=_warm_areas, daemon=True).start()
     return payload
 
 

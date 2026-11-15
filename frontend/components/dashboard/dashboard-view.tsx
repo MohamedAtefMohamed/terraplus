@@ -25,7 +25,14 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { LiveCatalogueCard } from "@/components/dashboard/live-catalogue-card";
 
 export function DashboardView() {
-  const query = useQuery({ queryKey: queryKeys.dashboard, queryFn: api.dashboard });
+  const query = useQuery({
+    queryKey: queryKeys.dashboard,
+    queryFn: api.dashboard,
+    refetchInterval: (state) => {
+      const rows = state.state.data?.locations;
+      return rows?.some((row) => row.observation_count == null) ? 12000 : false;
+    },
+  });
   const sources = useQuery({ queryKey: queryKeys.dataSources, queryFn: api.dataSources });
   const data = query.data;
   const analyses = data?.recent_analyses || [];
