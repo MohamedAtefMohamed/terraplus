@@ -7,20 +7,17 @@ import {
   Cloud,
   Database,
   Droplets,
-  FlaskConical,
-  Gauge,
   Info,
   Layers3,
   Moon,
   Radar,
   Satellite,
-  ScanLine,
   ShieldAlert,
   ShieldCheck,
   Signal,
-  Waves,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import { PipelineStepper } from "@/components/methodology/pipeline";
 import { Badge } from "@/components/ui/badge";
 import { Callout } from "@/components/ui/callout";
 import { buttonVariants } from "@/components/ui/button";
@@ -263,57 +260,12 @@ export default function MethodologyPage() {
             <H2 id="pipeline" eyebrow="04 · Processing">
               The change-detection pipeline
             </H2>
-            <div className="mt-4 space-y-3">
-              {[
-                {
-                  icon: ScanLine,
-                  title: "1 · Load and validate",
-                  body: "Read a single-band, georeferenced raster. Enforce supported formats, finite and physically plausible values, nodata handling and minimum valid coverage.",
-                },
-                {
-                  icon: Layers3,
-                  title: "2 · Align",
-                  body: "Require identical shape, CRS and geotransform. If the scenes are not on the same grid, the comparison is rejected instead of silently producing nonsense.",
-                },
-                {
-                  icon: Waves,
-                  title: "3 · Prepare",
-                  body: "Apply a 5×5 median filter as an explicit, inexpensive speckle-reduction screen. This is not a substitute for mission-grade calibration and multi-looking.",
-                },
-                {
-                  icon: Signal,
-                  title: "4 · Difference",
-                  body: "Compute the per-pixel dB difference (later minus earlier) and, equivalently, the ratio of calibrated linear powers.",
-                },
-                {
-                  icon: Droplets,
-                  title: "5 · Classify",
-                  body: "Flag increase/decrease beyond the configurable ± change threshold. Separately derive low-backscatter water-indicator masks and their gain, loss and persistence.",
-                },
-                {
-                  icon: Gauge,
-                  title: "6 · Quantify",
-                  body: "Convert valid pixel counts to area using the geotransform and local latitude. Compute descriptive statistics, a robust noise estimate and a processing-quality score.",
-                },
-                {
-                  icon: Layers3,
-                  title: "7 · Render and vectorise",
-                  body: "Produce colorized PNG overlays and simplified GeoJSON polygons for the web map. Keep source identifiers, method parameters and limitations attached.",
-                },
-              ].map((step) => {
-                const Icon = step.icon;
-                return (
-                  <div key={step.title} className="flex gap-3 rounded-md border border-line bg-surface/50 p-3.5">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded border border-line-strong bg-surface">
-                      <Icon className="size-3.5 text-accent" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-medium text-foreground">{step.title}</p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-muted">{step.body}</p>
-                    </div>
-                  </div>
-                );
-              })}
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-strong">
+              Seven stages, each mapped to the calls that implement it. Select a stage to see the
+              parameters and services involved.
+            </p>
+            <div className="mt-5">
+              <PipelineStepper />
             </div>
           </section>
 

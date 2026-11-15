@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AnalysisCharts } from "@/components/insights/analysis-charts";
 
 export function LiveInsights() {
   const [slug, setSlug] = useState("atchafalaya");
@@ -36,6 +37,12 @@ export function LiveInsights() {
   const explanationQuery = useQuery({
     queryKey: queryKeys.explanation(analysis?.id ?? 0),
     queryFn: () => api.explanation(analysis!.id),
+    enabled: Boolean(analysis),
+  });
+
+  const statisticsQuery = useQuery({
+    queryKey: ["analysis-statistics", analysis?.id ?? 0],
+    queryFn: () => api.statistics(analysis!.id),
     enabled: Boolean(analysis),
   });
 
@@ -132,6 +139,10 @@ export function LiveInsights() {
               {explanation.summary}
             </p>
           </section>
+
+          {statisticsQuery.data ? (
+            <AnalysisCharts statistics={statisticsQuery.data} />
+          ) : null}
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <section className="panel p-5">

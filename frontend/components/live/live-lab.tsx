@@ -9,7 +9,6 @@ import {
   CircleDot,
   Database,
   Droplets,
-  ExternalLink,
   Gauge,
   Layers3,
   Loader2,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import type { LiveChangeResult, LiveNisarGranule } from "@/types/api";
 import { api, assetUrl, queryKeys } from "@/lib/api";
-import { cn, formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/analysis/before-after-slider";
@@ -59,7 +58,7 @@ function GranuleCard({ granule }: { granule: LiveNisarGranule }) {
       >
         <div className="relative aspect-[16/9] bg-background">
           {granule.browse_thumbnail ? (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img
               src={granule.browse_thumbnail}
               alt={`NISAR browse image, ${formatDate(granule.start)}`}
@@ -106,7 +105,7 @@ function GranuleCard({ granule }: { granule: LiveNisarGranule }) {
             rel="noreferrer noopener"
             className="mt-2 block overflow-hidden rounded border border-line"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               src={browse}
               alt={`Full NISAR quick-look, ${formatDate(granule.start)}`}
@@ -166,7 +165,7 @@ export function LiveLab() {
   return (
     <div className="container-page pb-20 pt-10">
       <header className="max-w-3xl">
-        <p className="eyebrow">Live SAR change lab</p>
+        <p className="eyebrow">Change analysis</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground sm:text-4xl">
           Two passes over the same ground, measured
         </h1>
@@ -189,13 +188,13 @@ export function LiveLab() {
         </div>
       </header>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[340px_1fr]">
+      <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-4">
           <div className="panel p-4">
             <div className="flex items-center gap-2">
               <Layers3 className="size-3.5 text-accent" />
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-                Comparison setup
+                Tasking
               </p>
             </div>
             <div className="mt-4 space-y-3">
@@ -241,7 +240,7 @@ export function LiveLab() {
                   step={0.5}
                   value={threshold}
                   onChange={(event) => setThreshold(Number(event.target.value))}
-                  className="w-full accent-[#22d3ee]"
+                  className="w-full accent-[#f4f4f4]"
                 />
               </label>
               <Button
@@ -401,13 +400,70 @@ export function LiveLab() {
                 </div>
               </div>
 
+              <div className="panel p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Gauge className="size-3.5 text-accent" />
+                    <h3 className="text-xs font-semibold text-foreground">
+                      Measured composition
+                    </h3>
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                    share of valid pixels
+                  </span>
+                </div>
+                {(() => {
+                  const gain = result.stats.water_gain_fraction;
+                  const loss = result.stats.water_loss_fraction;
+                  const other = Math.max(
+                    0,
+                    result.stats.changed_fraction - gain - loss,
+                  );
+                  const rows = [
+                    { label: "Water gain", value: gain, color: "#7aa7ff" },
+                    { label: "Water loss", value: loss, color: "#d9a45b" },
+                    { label: "Other change", value: other, color: "#9b93ff" },
+                    { label: "Stable", value: Math.max(0, 1 - result.stats.changed_fraction), color: "#2c4666" },
+                  ];
+                  const max = Math.max(...rows.map((row) => row.value), 0.0001);
+                  return (
+                    <div className="mt-3 space-y-2">
+                      {rows.map((row) => (
+                        <div key={row.label} className="flex items-center gap-3">
+                          <span className="w-24 shrink-0 font-mono text-[10px] text-muted">
+                            {row.label}
+                          </span>
+                          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+                            <span
+                              className="block h-full rounded-full"
+                              style={{
+                                width: `${Math.max(1.5, (row.value / max) * 100)}%`,
+                                backgroundColor: row.color,
+                              }}
+                            />
+                          </span>
+                          <span className="w-14 shrink-0 text-right font-mono text-[10px] text-muted-strong">
+                            {(row.value * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="panel p-4">
-                  <div className="flex items-center gap-2">
-                    <CircleDot className="size-3.5 text-violet" />
-                    <h3 className="text-xs font-semibold text-foreground">Change overlay</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <CircleDot className="size-3.5 text-violet" />
+                      <h3 className="text-xs font-semibold text-foreground">Change overlay</h3>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                      measured
+                    </span>
                   </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={result.media_inline?.change || assetUrl(result.media.change) || ""}
                     alt="Change classification overlay: blue marks new low-backscatter water, orange marks water loss, violet marks other backscatter change"
@@ -415,21 +471,26 @@ export function LiveLab() {
                   />
                   <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-muted">
                     <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-sm bg-[#228cf9]" /> water gain
+                      <span className="size-2 rounded-sm bg-[#7aa7ff]" /> water gain
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-sm bg-[#fa7329]" /> water loss
+                      <span className="size-2 rounded-sm bg-[#d9a45b]" /> water loss
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-sm bg-[#8c6bf9]" /> other change
+                      <span className="size-2 rounded-sm bg-[#9b93ff]" /> other change
                     </span>
                   </div>
                 </div>
 
                 <div className="panel p-4">
-                  <div className="flex items-center gap-2">
-                    <Gauge className="size-3.5 text-teal" />
-                    <h3 className="text-xs font-semibold text-foreground">Scenes compared</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Gauge className="size-3.5 text-teal" />
+                      <h3 className="text-xs font-semibold text-foreground">Scenes compared</h3>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                      provenance
+                    </span>
                   </div>
                   <dl className="mt-3 space-y-2 text-[11px]">
                     {[

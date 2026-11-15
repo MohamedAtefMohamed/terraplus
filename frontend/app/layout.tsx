@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+
+const bodyFont = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const displayFont = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+const monoFont = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono-tech",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -29,7 +40,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${bodyFont.variable} ${displayFont.variable} ${monoFont.variable}`}
+    >
       <body className="min-h-screen font-sans antialiased">
         <Providers>
           <a

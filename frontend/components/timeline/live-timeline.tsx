@@ -3,19 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   CalendarClock,
   Radar,
   Satellite,
   Timer,
-  TriangleAlert,
 } from "lucide-react";
 import { api, queryKeys } from "@/lib/api";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Callout } from "@/components/ui/callout";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorPanel } from "@/components/ui/error-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -27,7 +26,8 @@ import {
 } from "@/components/ui/select";
 
 export function LiveTimeline() {
-  const [slug, setSlug] = useState("atchafalaya");
+  const searchParams = useSearchParams();
+  const [slug, setSlug] = useState(searchParams.get("location") || "atchafalaya");
   const locationsQuery = useQuery({ queryKey: queryKeys.locations, queryFn: api.locations });
   const timelineQuery = useQuery({
     queryKey: queryKeys.timeline(slug),
@@ -43,15 +43,52 @@ export function LiveTimeline() {
     }
   }, [locationsQuery.data, slug]);
 
-  const months = useMemo(() => {
-    const buckets = new Map<string, number>();
-    for (const row of data?.observations || []) {
-      const key = row.date.slice(0, 7);
-      buckets.set(key, (buckets.get(key) || 0) + 1);
-    }
-    return [...buckets.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const trackPasses = useMemo(() => {
+    const rows = [...(data?.observations || [])].sort((a, b) =>
+      a.acquired_at.localeCompare(b.acquired_at),
+    );
+    if (rows.length < 2) return [];
+    const times = rows.map((row) => new Date(row.acquired_at).getTime());
+    const min = Math.min(...times);
+    const max = Math.max(...times);
+    const span = Math.max(1, max - min);
+    return rows.map((row) => ({
+      id: row.id,
+      external_id: row.external_id,
+      acquired_at: row.acquired_at,
+      days_since_previous: row.days_since_previous,
+      metrics: row.metrics,
+      left: ((new Date(row.acquired_at).getTime() - min) / span) * 100,
+    }));
   }, [data]);
-  const maxCount = Math.max(1, ...months.map(([, count]) => count));
+
+  const monthTicks = useMemo(() => {
+    const rows = data?.observations || [];
+    if (rows.length < 2) return [];
+    const times = rows.map((row) => new Date(row.acquired_at).getTime());
+    const min = Math.min(...times);
+    const max = Math.max(...times);
+    const span = Math.max(1, max - min);
+    const ticks: Array<{ label: string; left: number }> = [];
+    const cursor = new Date(min);
+    cursor.setUTCDate(1);
+    cursor.setUTCHours(0, 0, 0, 0);
+    while (cursor.getTime() <= max) {
+      const left = ((cursor.getTime() - min) / span) * 100;
+      if (left >= 0 && left <= 100) {
+        ticks.push({
+          label: cursor.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }),
+          left,
+        });
+      }
+      cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+    }
+    return ticks;
+  }, [data]);
+
+  const selectedPass = trackPasses.find((pass) => pass.id === selectedId) || null;
 
   return (
     <div className="container-page py-8 lg:py-10">
@@ -132,26 +169,82 @@ export function LiveTimeline() {
           </div>
 
           <section className="panel p-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CalendarClock className="size-3.5 text-accent" />
-                <h2 className="text-xs font-semibold text-foreground">Passes per month</h2>
+                <h2 className="text-xs font-semibold text-foreground">Acquisition track</h2>
               </div>
-              <span className="font-mono text-[10px] text-muted">last 180 days</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                {data.observations.length} passes · 180 days
+              </span>
             </div>
-            {months.length ? (
-              <div className="mt-4 flex h-24 items-end gap-2">
-                {months.map(([month, count]) => (
-                  <div key={month} className="flex flex-1 flex-col items-center gap-1">
-                    <div
-                      className="w-full rounded-t bg-gradient-to-t from-accent/25 to-accent/70"
-                      style={{ height: `${Math.max(6, (count / maxCount) * 72)}px` }}
-                      title={`${count} passes`}
-                    />
-                    <span className="font-mono text-[9px] text-muted">{month.slice(2)}</span>
+
+            {data.observations.length ? (
+              <>
+                <div className="relative mt-5 h-20">
+                  <div className="absolute inset-x-0 top-9 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent" />
+                  {monthTicks.map((tick) => (
+                    <div key={`${tick.label}-${tick.left}`} className="absolute top-9" style={{ left: `${tick.left}%` }}>
+                      <span className="block h-2 w-px bg-line-strong" />
+                      <span className="mt-1 block -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.12em] text-muted">
+                        {tick.label}
+                      </span>
+                    </div>
+                  ))}
+                  {trackPasses.map((pass) => (
+                    <button
+                      key={pass.id}
+                      type="button"
+                      title={`${pass.external_id}
+${formatDate(pass.acquired_at)}`}
+                      aria-label={`Select pass ${formatDate(pass.acquired_at)}`}
+                      onClick={() => setSelectedId(pass.id === selectedId ? null : pass.id)}
+                      className="group absolute top-0 -translate-x-1/2"
+                      style={{ left: `${pass.left}%` }}
+                    >
+                      <span
+                        className={cn(
+                          "block rounded-t-sm border transition-all",
+                          pass.id === selectedId
+                            ? "h-10 w-2 border-accent bg-accent/70"
+                            : "h-7 w-1.5 border-line-strong bg-surface-high group-hover:h-9 group-hover:border-accent/60",
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {selectedPass ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[10px] text-foreground">
+                        {formatDate(selectedPass.acquired_at)} ·{" "}
+                        {String(selectedPass.metrics?.orbit_state ?? "")} orbit{" "}
+                        {String(selectedPass.metrics?.relative_orbit ?? "—")}
+                      </p>
+                      <p className="mt-0.5 truncate font-mono text-[9px] text-muted" title={selectedPass.external_id}>
+                        {selectedPass.external_id}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-muted">
+                        {selectedPass.days_since_previous !== null
+                          ? `${selectedPass.days_since_previous} d since previous pass`
+                          : "first pass in window"}
+                      </span>
+                      <Link
+                        href={`/live?area=${slug}`}
+                        className="inline-flex items-center gap-1 text-[10px] font-medium text-accent hover:text-accent-soft"
+                      >
+                        Use in comparison <ArrowRight className="size-3" />
+                      </Link>
+                    </div>
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <p className="mt-3 border-t border-line pt-3 text-[11px] text-muted">
+                    Select a marker to inspect the acquisition.
+                  </p>
+                )}
+              </>
             ) : (
               <p className="mt-3 text-xs text-muted">No passes in this window.</p>
             )}
@@ -176,7 +269,7 @@ export function LiveTimeline() {
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.03]"
                   >
                     {granule.browse_thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
+                       
                       <img
                         src={granule.browse_thumbnail}
                         alt=""

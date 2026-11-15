@@ -8,13 +8,13 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-gradient-to-r from-accent via-accent-soft to-teal text-[#03131a] shadow-[0_10px_40px_-18px_rgba(77,227,247,0.85)] hover:brightness-110 hover:shadow-[0_12px_50px_-16px_rgba(77,227,247,0.95)]",
+          "border border-[#f4f4f4] bg-[#f4f4f4] text-[#070708] shadow-[0_16px_50px_-30px_rgba(255,255,255,0.55)] hover:border-white hover:bg-white",
         secondary:
-          "border border-line-strong bg-white/[0.04] text-foreground backdrop-blur hover:border-accent/40 hover:bg-white/[0.07]",
+          "border border-white/14 bg-[#111114] text-foreground hover:border-white/42 hover:bg-[#17171a]",
         outline:
-          "border border-line bg-transparent text-muted-strong hover:border-line-strong hover:bg-white/[0.03] hover:text-foreground",
-        ghost: "text-muted-strong hover:bg-white/[0.05] hover:text-foreground",
-        danger: "bg-danger/15 text-danger border border-danger/30 hover:bg-danger/25",
+          "border border-white/10 bg-transparent text-muted-strong hover:border-white/30 hover:bg-white/[0.03] hover:text-foreground",
+        ghost: "text-muted-strong hover:bg-white/[0.04] hover:text-foreground",
+        danger: "border border-danger/30 bg-danger/10 text-danger hover:bg-danger/18",
         link: "text-accent underline-offset-4 hover:underline",
       },
       size: {

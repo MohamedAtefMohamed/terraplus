@@ -182,7 +182,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Close tour"
               onClick={close}
-              className="absolute inset-0 cursor-default bg-[#03060a]/80 backdrop-blur-md"
+              className="absolute inset-0 cursor-default bg-[#030508]/85 backdrop-blur-md"
             />
             <motion.div
               role="dialog"
@@ -208,7 +208,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                       className="absolute inset-0 size-full object-cover"
                     />
                   </AnimatePresence>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#05070b]/70 via-transparent to-[#05070b]/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#070708]/70 via-transparent to-[#070708]/20" />
                   <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/80 backdrop-blur">
                     <Compass className="size-3" />
                     Guided tour

@@ -254,9 +254,10 @@ def _diff_png(
     rgb[..., 1] = base * 0.34
     rgb[..., 2] = base * 0.42
     other = changed & ~gain & ~loss
-    rgb[gain] = (0.13, 0.55, 0.98)
-    rgb[loss] = (0.98, 0.45, 0.16)
-    rgb[other] = (0.55, 0.42, 0.98)
+    # Keep these in step with the web legend (TerraPulse overlay palette).
+    rgb[gain] = (0.431, 0.608, 1.0)
+    rgb[loss] = (0.851, 0.643, 0.357)
+    rgb[other] = (0.608, 0.576, 1.0)
     data = (np.clip(rgb, 0, 1) * 255).astype("uint8")
     Image.fromarray(data, mode="RGB").resize((512, 512), Image.Resampling.BILINEAR).save(path)
 

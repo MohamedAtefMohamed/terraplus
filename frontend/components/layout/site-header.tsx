@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,61 +11,81 @@ import { Logo } from "@/components/layout/logo";
 import { useTour } from "@/components/tour/guided-tour";
 
 const NAV = [
-  { href: "/live", label: "Live lab" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/map", label: "Map explorer" },
-  { href: "/analysis", label: "Change analysis" },
+  { href: "/map", label: "Earth Explorer" },
+  { href: "/live", label: "Change Analysis" },
   { href: "/timeline", label: "Timeline" },
   { href: "/insights", label: "Interpretation" },
+  { href: "/missions", label: "Data & Missions" },
   { href: "/methodology", label: "Methodology" },
+  { href: "/about", label: "About" },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const tour = useTour();
 
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-background/70 backdrop-blur-2xl">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
-      <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Logo />
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 14);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
-          {NAV.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative rounded-md px-3 py-2 text-[13px] font-medium transition-colors",
-                  active ? "text-foreground" : "text-muted hover:text-foreground",
-                )}
-              >
-                {item.label}
-                {active ? (
-                  <span className="absolute inset-x-3 -bottom-[1px] h-[2px] rounded-full bg-gradient-to-r from-accent/0 via-accent to-accent/0 shadow-[0_0_18px_rgba(77,227,247,0.7)]" />
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  return (
+    <header
+      className={cn(
+        "sticky top-0 z-50 transition-colors duration-300",
+        scrolled
+          ? "border-b border-white/[0.06] bg-[#070708]/88 backdrop-blur-2xl"
+          : "border-b border-transparent bg-transparent",
+      )}
+    >
+      <div className="container-page flex h-15 items-center justify-between gap-4 py-2.5">
+        <div className="flex items-center gap-6">
+          <Logo />
+          <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main navigation">
+            {NAV.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "relative rounded-md px-2.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors",
+                    active ? "text-foreground" : "text-muted hover:text-foreground",
+                  )}
+                >
+                  {item.label}
+                  {active ? (
+                    <span className="absolute inset-x-2.5 -bottom-px h-px bg-accent-soft shadow-[0_0_12px_rgba(155,230,245,0.55)]" />
+                  ) : null}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => tour.open(true)}
-            className="hidden items-center gap-1.5 rounded-full border border-line-strong bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-muted-strong transition-colors hover:border-accent/40 hover:text-foreground sm:inline-flex"
+            className="hidden size-9 items-center justify-center rounded-md border border-line-strong bg-white/[0.03] text-muted-strong transition-colors hover:border-accent/40 hover:text-foreground lg:inline-flex"
+            aria-label="Take the guided tour"
+            title="Take the guided tour"
           >
-            <Compass className="size-3.5 text-accent" />
-            Take the tour
+            <Compass className="size-4 text-accent" />
           </button>
           <Link
-            href="/live"
+            href="/map"
             className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
           >
-            Open live lab
+            Launch Earth Explorer
             <ArrowUpRight className="size-3.5" />
           </Link>
           <button
@@ -73,7 +93,7 @@ export function SiteHeader() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
-            className="inline-flex size-9 items-center justify-center rounded-md border border-line bg-surface text-muted-strong lg:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-md border border-line bg-surface text-muted-strong xl:hidden"
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
@@ -83,23 +103,22 @@ export function SiteHeader() {
       <AnimatePresence>
         {open ? (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="overflow-hidden border-t border-line bg-background/95 lg:hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden border-t border-line bg-background/95 backdrop-blur-2xl xl:hidden"
           >
-            <nav className="container-page grid gap-1 py-4" aria-label="Mobile navigation">
+            <div className="container-page flex flex-col gap-0.5 py-3">
               {NAV.map((item) => {
-                const active = pathname === item.href;
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center justify-between rounded-md px-3 py-2.5 text-sm",
-                      active ? "bg-surface-high text-foreground" : "text-muted hover:bg-surface hover:text-foreground",
+                      "flex items-center justify-between rounded-md px-3 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em]",
+                      active ? "bg-accent/[0.08] text-foreground" : "text-muted",
                     )}
                   >
                     {item.label}
@@ -114,19 +133,15 @@ export function SiteHeader() {
                     setOpen(false);
                     tour.open(true);
                   }}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-strong"
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-strong"
                 >
-                  <Compass className="size-3.5 text-accent" /> Take the tour
+                  <Compass className="size-3.5 text-accent" /> Guided tour
                 </button>
-                <Link
-                  href="/live"
-                  onClick={() => setOpen(false)}
-                  className={cn(buttonVariants({ size: "sm" }))}
-                >
-                  Open live lab
+                <Link href="/map" className={cn(buttonVariants({ size: "sm" }))}>
+                  Launch explorer
                 </Link>
               </div>
-            </nav>
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>

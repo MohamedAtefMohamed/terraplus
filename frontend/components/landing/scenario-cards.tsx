@@ -25,7 +25,7 @@ function AreaCard({ location }: { location: Location }) {
         {isLoading ? (
           <Skeleton className="size-full rounded-none" />
         ) : thumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
+           
           <img
             src={thumbnail}
             alt={`NISAR browse image over ${location.name}, ${formatDate(latest?.start)}`}

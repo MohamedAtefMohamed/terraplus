@@ -58,7 +58,7 @@ export function LiveNisarFeed() {
                 title={`${granule.id} · ${formatDate(granule.start)}`}
               >
                 {granule.browse_thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+                   
                   <img
                     src={granule.browse_thumbnail}
                     alt={`NISAR browse image acquired ${formatDate(granule.start)}`}

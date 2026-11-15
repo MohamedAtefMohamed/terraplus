@@ -29,6 +29,7 @@ interface MapCanvasProps {
   onObservationSelect?: (id: number) => void;
   onLiveFootprintSelect?: (id: string) => void;
   onMapClick?: (coords: { lng: number; lat: number }) => void;
+  onPointerMove?: (coords: { lng: number; lat: number }) => void;
 }
 
 interface MinimalFeatureCollection {
@@ -209,18 +210,18 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
     {
       id: "background",
       type: "background",
-      paint: { "background-color": "#04080f" },
+      paint: { "background-color": "#070708" },
     },
     {
       id: "esri-base",
       type: "raster",
       source: "esri-imagery",
       paint: {
-        "raster-opacity": 0.82,
-        "raster-saturation": -0.32,
-        "raster-contrast": 0.04,
-        "raster-brightness-min": 0.04,
-        "raster-brightness-max": 0.92,
+        "raster-opacity": 0.78,
+        "raster-saturation": -0.45,
+        "raster-contrast": 0.05,
+        "raster-brightness-min": 0.03,
+        "raster-brightness-max": 0.88,
       },
     },
     {
@@ -229,9 +230,10 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
       source: "gibs-imagery",
       layout: { visibility: "none" },
       paint: {
-        "raster-opacity": 0.92,
-        "raster-saturation": -0.1,
-        "raster-contrast": 0.02,
+        "raster-opacity": 0.88,
+        "raster-saturation": -0.22,
+        "raster-contrast": 0.03,
+        "raster-brightness-max": 0.94,
       },
     },
     {
@@ -239,7 +241,7 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
       type: "raster",
       source: "carto-dark",
       layout: { visibility: "none" },
-      paint: { "raster-opacity": 0.72 },
+      paint: { "raster-opacity": 0.62 },
     },
   ],
 };
@@ -251,7 +253,7 @@ export function MapCanvas({
   liveFootprints = [],
   selectedLiveId = null,
   selectedLocationSlug = null,
-  basemap = "satellite",
+  basemap = "gibs",
   layerVisibility = {},
   dateRange,
   clickedPoint = null,
@@ -261,6 +263,7 @@ export function MapCanvas({
   onObservationSelect,
   onLiveFootprintSelect,
   onMapClick,
+  onPointerMove,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -271,6 +274,7 @@ export function MapCanvas({
     onObservationSelect,
     onLiveFootprintSelect,
     onMapClick,
+    onPointerMove,
   });
   useEffect(() => {
     callbacks.current = {
@@ -278,8 +282,15 @@ export function MapCanvas({
       onObservationSelect,
       onLiveFootprintSelect,
       onMapClick,
+      onPointerMove,
     };
-  }, [onLocationSelect, onObservationSelect, onLiveFootprintSelect, onMapClick]);
+  }, [
+    onLocationSelect,
+    onObservationSelect,
+    onLiveFootprintSelect,
+    onMapClick,
+    onPointerMove,
+  ]);
 
   const visible = (key: string, fallback = true) =>
     layerVisibility[key] === undefined ? fallback : layerVisibility[key];
@@ -327,7 +338,7 @@ export function MapCanvas({
         type: "fill",
         source: "locations",
         paint: {
-          "fill-color": "#34d399",
+          "fill-color": "#8bd1a9",
           "fill-opacity": selectedLocationSlug ? 0.05 : 0.07,
         },
       });
@@ -336,7 +347,7 @@ export function MapCanvas({
         type: "line",
         source: "locations",
         paint: {
-          "line-color": "#34d399",
+          "line-color": "#8bd1a9",
           "line-width": 1.3,
           "line-opacity": 0.55,
           "line-dasharray": [3, 2],
@@ -352,7 +363,7 @@ export function MapCanvas({
         type: "fill",
         source: "nisar-footprints",
         paint: {
-          "fill-color": "#34d399",
+          "fill-color": "#8bd1a9",
           "fill-opacity": 0.055,
         },
       });
@@ -361,7 +372,7 @@ export function MapCanvas({
         type: "line",
         source: "nisar-footprints",
         paint: {
-          "line-color": "#34d399",
+          "line-color": "#8bd1a9",
           "line-width": 1.4,
           "line-opacity": 0.8,
         },
@@ -377,10 +388,10 @@ export function MapCanvas({
         source: "observations",
         paint: {
           "circle-radius": 9,
-          "circle-color": "#22d3ee",
+          "circle-color": "#f4f4f4",
           "circle-opacity": 0.13,
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#22d3ee",
+          "circle-stroke-color": "#f4f4f4",
           "circle-stroke-opacity": 0.35,
         },
       });
@@ -390,10 +401,10 @@ export function MapCanvas({
         source: "observations",
         paint: {
           "circle-radius": 4.2,
-          "circle-color": "#22d3ee",
+          "circle-color": "#f4f4f4",
           "circle-opacity": 0.95,
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#04131a",
+          "circle-stroke-color": "#0d0d0f",
         },
       });
 
@@ -407,10 +418,10 @@ export function MapCanvas({
         source: "clicked-point",
         paint: {
           "circle-radius": 8,
-          "circle-color": "#fbbf24",
+          "circle-color": "#d9a45b",
           "circle-opacity": 0.15,
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#fbbf24",
+          "circle-stroke-color": "#d9a45b",
           "circle-stroke-opacity": 0.7,
         },
       });
@@ -420,7 +431,7 @@ export function MapCanvas({
         source: "clicked-point",
         paint: {
           "circle-radius": 2.4,
-          "circle-color": "#fbbf24",
+          "circle-color": "#d9a45b",
         },
       });
 
@@ -446,6 +457,10 @@ export function MapCanvas({
           }
         }
         callbacks.current.onMapClick?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
+      });
+
+      map.on("mousemove", (event: maplibregl.MapMouseEvent) => {
+        callbacks.current.onPointerMove?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
       });
 
       map.on("mouseenter", "obs-circles", () => {
@@ -611,8 +626,8 @@ export function MapCanvas({
       map.setPaintProperty("nisar-line", "line-color", [
         "case",
         ["==", ["get", "id"], selected],
-        "#fbbf24",
-        "#34d399",
+        "#d9a45b",
+        "#8bd1a9",
       ]);
     }
     if (map.getLayer("nisar-fill")) {
@@ -712,7 +727,7 @@ export function MapCanvas({
         </div>
       ) : null}
       {!ready && !failed ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#050a12]">
+        <div className="absolute inset-0 flex items-center justify-center bg-[#070708]">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             <span className="size-1.5 animate-pulse rounded-full bg-accent" />
             Initialising map surface

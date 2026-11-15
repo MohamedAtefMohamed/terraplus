@@ -360,21 +360,16 @@ export interface LayersResponse {
 }
 
 export interface DataSource {
-  key: string;
   name: string;
-  provider: string;
-  description: string;
-  url: string;
-  attribution: string;
-  license_note: string;
-  modes: string[];
-  is_available: boolean;
-  status_note: string;
+  role: string;
+  url: string | null;
+  available: boolean;
+  requires_credentials: boolean;
 }
 
 export interface DataSourcesResponse {
-  data: DataStatus;
   sources: DataSource[];
+  mode: string;
 }
 
 export interface LiveItem {
@@ -430,10 +425,29 @@ export interface AnalysisStatisticRow {
 
 export interface AnalysisStatistics {
   analysis_id: number;
-  stats: AnalysisStats;
-  quality: QualityReport;
-  confidence: { score: number; label: string };
-  rows: AnalysisStatisticRow[];
+  stats: AnalysisStats & {
+    valid_coverage?: number;
+    water_before_fraction?: number;
+    water_after_fraction?: number;
+    net_water_change_km2?: number;
+    difference_noise_db?: number | null;
+    aoi_area_km2?: number;
+    valid_area_km2?: number;
+    change_area_km2?: number;
+    water_gain_km2?: number;
+    water_loss_km2?: number;
+  };
+  quality: QualityReport & {
+    valid_coverage?: number;
+    confidence_score?: number;
+    confidence_label?: string;
+    pair_gap_days?: number;
+    same_relative_orbit?: boolean;
+  };
+  method?: { change_threshold_db?: number; water_threshold_db?: number };
+  limitations?: string[];
+  confidence?: { score: number; label: string };
+  rows?: AnalysisStatisticRow[];
 }
 
 export interface LiveNisarGranule {
