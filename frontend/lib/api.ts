@@ -134,6 +134,13 @@ export const api = {
     request<LiveScenesResponse>(
       `/api/live/sentinel1${queryString(params as Record<string, string | number>)}`,
     ),
+  compareLive: (params: { location: string; days?: number; threshold_db?: number }) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) search.set(key, String(value));
+    }
+    return request<Analysis>(`/api/analysis/compare?${search.toString()}`, { method: "POST" });
+  },
   liveChange: (params: { bbox: string; days?: number; threshold_db?: number; force?: boolean }) => {
     const search = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
