@@ -214,6 +214,7 @@ export interface Location {
   country: string;
   region: string;
   focus: string;
+  category: string;
   scenario: string;
   description: string;
   monitoring_note: string;

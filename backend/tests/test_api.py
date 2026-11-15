@@ -28,11 +28,25 @@ def test_data_sources_are_live_only(client):
 
 def test_locations_are_real_and_not_synthetic(client, catalog):
     rows = client.get("/api/locations").json()
-    assert {row["slug"] for row in rows} == {area.slug for area in AREAS}
+    slugs = {row["slug"] for row in rows}
+    assert slugs == {area.slug for area in AREAS}
+    assert len(rows) >= 12
     assert all(row["is_demo"] is False for row in rows)
+    assert all(row["category"] for row in rows)
     atchafalaya = next(row for row in rows if row["slug"] == "atchafalaya")
     assert atchafalaya["bbox"][0] < atchafalaya["bbox"][2]
     assert atchafalaya["observation_count"] >= 0
+    for row in rows:
+        west, south, east, north = row["bbox"]
+        assert -180 <= west < east <= 180 and -90 <= south < north <= 90
+
+
+def test_area_catalogue_lists_categories(client):
+    body = client.get("/api/areas").json()
+    assert body["count"] >= 12
+    assert len(body["areas"]) == body["count"]
+    assert "Ice & snow" in body["categories"]
+    assert all(area["category"] in body["categories"] for area in body["areas"])
 
 
 def test_observations_come_from_the_catalogue(client, catalog):
@@ -63,7 +77,7 @@ def test_dashboard_is_live_only(client, catalog):
     body = client.get("/api/dashboard/summary").json()
     assert body["data_status"]["label"] == "LIVE DATA"
     assert body["data_status"]["is_synthetic"] is False
-    assert body["stats"]["locations"] == 3
+    assert body["stats"]["locations"] == len(AREAS)
     assert body["stats"]["observations"] >= 0
     assert all(obs["is_synthetic"] is False for obs in body["recent_observations"])
 

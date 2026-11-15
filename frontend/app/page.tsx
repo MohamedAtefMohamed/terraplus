@@ -53,8 +53,8 @@ const CAPABILITIES = [
   {
     icon: GitCompareArrows,
     title: "Change comparison",
-    body: "Two Sentinel-1 GRD scenes from the same relative orbit are paired, read through cloud-optimized GeoTIFF windows, and compared in decibels after a 3×3 speckle screen.",
-    points: ["Windowed COG reads", "Otsu water threshold", "GeoJSON change patches"],
+    body: "Two Sentinel-1 GRD scenes on the same track and polarisation are paired, read through cloud-optimized GeoTIFF windows, and compared in decibels after a 3×3 speckle screen.",
+    points: ["IW and EW modes", "Otsu water threshold", "GeoJSON change patches"],
   },
   {
     icon: Layers3,

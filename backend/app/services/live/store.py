@@ -131,6 +131,7 @@ def _area_location(area: Area, nisar_count: int, latest_analysis: dict | None) -
         "country": area.country,
         "region": area.region,
         "focus": area.focus,
+        "category": area.category,
         "scenario": "Live monitoring area",
         "description": area.description,
         "monitoring_note": area.note,

@@ -12,6 +12,7 @@ import { useTour } from "@/components/tour/guided-tour";
 
 const NAV = [
   { href: "/map", label: "Earth Explorer" },
+  { href: "/areas", label: "Areas" },
   { href: "/live", label: "Change Analysis" },
   { href: "/timeline", label: "Timeline" },
   { href: "/insights", label: "Interpretation" },

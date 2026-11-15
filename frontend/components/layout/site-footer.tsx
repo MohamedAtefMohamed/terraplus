@@ -4,6 +4,7 @@ import { Logo } from "@/components/layout/logo";
 
 const platform = [
   { href: "/map", label: "Earth Explorer" },
+  { href: "/areas", label: "Monitoring areas" },
   { href: "/live", label: "Change Analysis" },
   { href: "/timeline", label: "Timeline" },
   { href: "/insights", label: "Interpretation" },

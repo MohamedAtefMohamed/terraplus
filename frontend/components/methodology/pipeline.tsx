@@ -21,7 +21,7 @@ const STAGES = [
     title: "Data acquisition",
     icon: Database,
     summary: "Catalogue and scene discovery",
-    body: "Sentinel-1 GRD scenes are found through the Element 84 Earth Search STAC index and filtered to IW mode. NISAR granule records and browse imagery come from the ASF DAAC search API.",
+    body: "Sentinel-1 GRD scenes are found through the Element 84 Earth Search STAC index across both IW (mid-latitude) and EW (polar ice) modes. NISAR granule records and browse imagery come from the ASF DAAC search API.",
     implementation: [
       "GET /api/live/sentinel1 → POST earth-search /search",
       "GET /api/live/nisar → ASF search API (output=geojson)",
@@ -65,8 +65,8 @@ const STAGES = [
     summary: "Same track, 12-day repeat",
     body: "Scenes are grouped by relative orbit and orbit direction. The engine picks the pair closest to the mission's repeat interval and rejects pairs closer than three days, because short gaps rarely carry usable change.",
     implementation: [
-      "Group by sat:relative_orbit + sat:orbit_state",
-      "Score = |gap_days − 12|, minimum gap 3 days",
+      "Group by relative orbit, orbit state, mode and band",
+      "Score against the 6-day and 12-day repeats, minimum gap 3 days",
       "pair_preference reported with every result",
     ],
     signal: "12 d",
@@ -79,7 +79,7 @@ const STAGES = [
     summary: "Median screen, Otsu split, dB threshold",
     body: "A 3×3 median filter reduces speckle. Water is separated with an Otsu threshold computed from the pooled dB histogram of both passes. Pixels beyond the change threshold become the change mask.",
     implementation: [
-      "scipy.ndimage.median_filter(size=3)",
+      "Like-polarisation channel (VV preferred, HH over ice)",
       "Otsu split on pooled dB histogram (bounded to p2–p98)",
       "changed = |ΔdB| > 3.0 dB (adjustable 1.5–6.0)",
     ],

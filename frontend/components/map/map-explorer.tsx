@@ -265,6 +265,7 @@ export function MapExplorer() {
   const [clickedPoint, setClickedPoint] = useState<{ lng: number; lat: number } | null>(null);
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null);
   const [areaQuery, setAreaQuery] = useState("");
+  const [areaCategory, setAreaCategory] = useState<string>("all");
   const [productFilter, setProductFilter] = useState<string>("all");
   const [liveStart, setLiveStart] = useState("");
   const [liveEnd, setLiveEnd] = useState("");
@@ -314,17 +315,23 @@ export function MapExplorer() {
     location?.latest_analysis ||
     null;
 
+  const areaCategories = useMemo(
+    () => [...new Set((locationsQuery.data || []).map((item) => item.category))].sort(),
+    [locationsQuery.data],
+  );
+
   const filteredAreas = useMemo(() => {
     const rows = locationsQuery.data || [];
-    if (!areaQuery.trim()) return rows;
-    const query = areaQuery.trim().toLowerCase();
-    return rows.filter(
-      (item) =>
-        item.name.toLowerCase().includes(query) ||
-        item.region.toLowerCase().includes(query) ||
-        item.country.toLowerCase().includes(query),
-    );
-  }, [locationsQuery.data, areaQuery]);
+    return rows.filter((item) => {
+      if (areaCategory !== "all" && item.category !== areaCategory) return false;
+      if (!areaQuery.trim()) return true;
+      const query = areaQuery.trim().toLowerCase();
+      return [item.name, item.region, item.country, item.category]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [locationsQuery.data, areaQuery, areaCategory]);
 
   const locationObservations = useMemo(() => {
     const rows = (observationsQuery.data || []).filter(
@@ -462,6 +469,29 @@ export function MapExplorer() {
                   </span>
                 </label>
 
+                {areaCategories.length ? (
+                  <div>
+                    <p className="tech-label">Hazard category</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {["all", ...areaCategories].map((name) => (
+                        <button
+                          key={name}
+                          type="button"
+                          onClick={() => setAreaCategory(name)}
+                          className={cn(
+                            "rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] transition-colors",
+                            areaCategory === name
+                              ? "border-white/60 bg-white/[0.08] text-foreground"
+                              : "border-white/10 text-muted hover:border-white/30 hover:text-foreground",
+                          )}
+                        >
+                          {name === "all" ? "all" : name.split(" ")[0]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
                 <div>
                   <p className="tech-label">Monitoring areas ({filteredAreas.length})</p>
                   <div className="mt-2 space-y-1.5">
@@ -488,7 +518,7 @@ export function MapExplorer() {
                               {item.name}
                             </span>
                             <span className="mt-0.5 block truncate text-[10px] text-muted">
-                              {item.region}
+                              {item.category} · {item.region}
                             </span>
                           </span>
                           <span className="shrink-0 font-mono text-[10px] text-muted">
