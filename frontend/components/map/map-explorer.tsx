@@ -531,7 +531,7 @@ export function MapExplorer() {
                           <span className="shrink-0 font-mono text-[10px] text-muted">
                             {item.observation_count == null
                               ? "—"
-                              : `${item.observation_count}${item.observation_count_capped ? "+" : ""}d`}
+                              : `${item.observation_count}d`}
                           </span>
                         </button>
                       ))

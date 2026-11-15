@@ -25,9 +25,13 @@ Live data sources:
 ## Live pipeline
 
 - `GET /api/live/nisar` queries ASF for NISAR granules and returns product level, orbit direction, track and frame, footprints, and official browse imagery.
+- `GET /api/live/thumbnails` resolves the newest browse quick-look for every monitoring area in one cached call.
+- `GET /api/areas` lists all 15 monitoring areas with hazard categories, bounding boxes and descriptions.
 - `GET /api/live/sentinel1` lists Sentinel-1 GRD scenes for an AOI and reports the pair the engine would use.
 - `POST /api/live/change` pairs two same-track scenes near the 12-day repeat, reads decimated windows from both COGs over HTTPS, applies a 3×3 median screen, an Otsu water split, and a configurable dB change threshold, then returns PNG previews (inline base64), statistics, and vectorized patches. Results cache for six hours per area and parameter set.
 - The frontend live lab is at `/live`; the map defaults to NASA GIBS imagery and the dashboard shows the live NISAR feed.
+- Fifteen monitoring areas span seven hazard categories: flood and wetland (Sundarbans, Mekong, Atchafalaya, Okavango, Indus floodplain), ice and snow (Ilulissat, Bering Glacier), sea ice and coast (Utqiaġvik), wildfire (Fort McMurray, Pantanal), agriculture (Iowa cropland, Punjab rice belt), subsidence (Jakarta, Mexico City), and volcanism (Kīlauea).
+- Sentinel-1 pairing accepts both IW and EW modes and prefers the like-polarisation channel (VV, falling back to HH where the archive is single-polarisation), which is what makes polar sites work.
 
 ![TerraPulse landing page](docs/screenshots/landing.png)
 

@@ -151,7 +151,7 @@ export function DashboardView() {
                       <Badge variant="outline">
                         {location.observation_count == null
                           ? "counting"
-                          : `${location.observation_count}${location.observation_count_capped ? "+" : ""} acq. days`}
+                          : `${location.observation_count} acq. days`}
                       </Badge>
                       {location.latest_analysis ? (
                         <Badge variant="emerald">cached</Badge>

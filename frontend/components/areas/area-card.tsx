@@ -24,9 +24,7 @@ export function AreaCard({ location }: { location: Location }) {
   const thumbnail = latest?.thumbnail;
   const count = location.observation_count;
   const countLabel =
-    count === null || count === undefined
-      ? "counting"
-      : `${count}${location.observation_count_capped ? "+" : ""} acq. days`;
+    count === null || count === undefined ? "counting" : `${count} acq. days`;
 
   return (
     <article className="panel panel-hover group flex flex-col overflow-hidden">
