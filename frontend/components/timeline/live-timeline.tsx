@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Callout } from "@/components/ui/callout";
 import { ErrorPanel } from "@/components/ui/error-panel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SafeImage } from "@/components/ui/safe-image";
 import {
   Select,
   SelectContent,
@@ -268,19 +269,16 @@ ${formatDate(pass.acquired_at)}`}
                     rel="noreferrer noopener"
                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.03]"
                   >
-                    {granule.browse_thumbnail ? (
-                       
-                      <img
-                        src={granule.browse_thumbnail}
-                        alt=""
-                        className="size-10 rounded border border-line object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="grid size-10 place-items-center rounded border border-line">
-                        <Radar className="size-3.5 text-muted" />
-                      </div>
-                    )}
+                    <SafeImage
+                      src={granule.browse_thumbnail}
+                      alt=""
+                      className="size-10 rounded border border-line object-cover"
+                      fallback={
+                        <div className="grid size-10 place-items-center rounded border border-line">
+                          <Radar className="size-3.5 text-muted" />
+                        </div>
+                      }
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="text-[11px] font-medium text-foreground">
                         {formatDate(granule.start)}

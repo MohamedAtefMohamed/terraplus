@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/select";
 import { DynamicMap } from "@/components/map/dynamic-map";
 import { MapStatusHint } from "@/components/map/map-status";
+import { SafeImage } from "@/components/ui/safe-image";
 
 const DEFAULT_VISIBILITY: Record<string, boolean> = {
   radar_observations: true,
@@ -623,19 +624,16 @@ export function MapExplorer() {
                               : "border-line bg-background/40 hover:border-line-strong",
                           )}
                         >
-                          {observation.preview_url ? (
-                             
-                            <img
-                              src={assetUrl(observation.preview_url) || ""}
-                              alt=""
-                              className="size-8 rounded border border-line object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className="grid size-8 place-items-center rounded border border-line">
-                              <Satellite className="size-3 text-muted" />
-                            </span>
-                          )}
+                          <SafeImage
+                            src={assetUrl(observation.preview_url)}
+                            alt=""
+                            className="size-8 rounded border border-line object-cover"
+                            fallback={
+                              <span className="grid size-8 place-items-center rounded border border-line">
+                                <Satellite className="size-3 text-muted" />
+                              </span>
+                            }
+                          />
                           <span className="min-w-0 flex-1">
                             <span className="block font-mono text-[10px] text-foreground">
                               {formatDate(observation.acquired_at)}
@@ -931,14 +929,11 @@ export function MapExplorer() {
                             {selectedObservation.product_type} · {selectedObservation.crs}
                           </p>
                         </div>
-                        {selectedObservation.preview_url ? (
-                           
-                          <img
-                            src={assetUrl(selectedObservation.preview_url) || ""}
-                            alt="Selected acquisition preview"
-                            className="size-14 rounded border border-line object-cover"
-                          />
-                        ) : null}
+                        <SafeImage
+                          src={assetUrl(selectedObservation.preview_url)}
+                          alt="Selected acquisition preview"
+                          className="size-14 rounded border border-line object-cover"
+                        />
                       </div>
                       <p className="mt-2 break-all font-mono text-[9px] text-muted">
                         {selectedObservation.external_id}

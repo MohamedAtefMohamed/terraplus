@@ -7,6 +7,7 @@ import type { Location } from "@/types/api";
 import { api, queryKeys } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function AreaCard({ location }: { location: Location }) {
@@ -26,21 +27,22 @@ export function AreaCard({ location }: { location: Location }) {
       <div className="relative h-36 overflow-hidden border-b border-line bg-background">
         {isLoading ? (
           <Skeleton className="size-full rounded-none" />
-        ) : thumbnail ? (
-           
-          <img
+        ) : (
+          <SafeImage
             src={thumbnail}
             alt={`NISAR browse image over ${location.name}, ${formatDate(latest?.start)}`}
             className="size-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-[1.03]"
-            loading="lazy"
+            fallback={
+              <div className="grid size-full place-items-center">
+                <div className="text-center">
+                  <Radar className="mx-auto size-5 text-muted" />
+                  <p className="mt-1 text-[10px] text-muted">
+                    {latest ? "Browse image unavailable" : "No granule in the last year"}
+                  </p>
+                </div>
+              </div>
+            }
           />
-        ) : (
-          <div className="grid size-full place-items-center">
-            <div className="text-center">
-              <Radar className="mx-auto size-5 text-muted" />
-              <p className="mt-1 text-[10px] text-muted">No granule in the last year</p>
-            </div>
-          </div>
         )}
         <div className="absolute left-3 top-3 flex flex-wrap items-center gap-1.5">
           <Badge variant="accent" className="bg-[#111114]/80 backdrop-blur">

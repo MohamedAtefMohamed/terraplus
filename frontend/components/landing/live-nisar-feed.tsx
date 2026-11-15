@@ -5,6 +5,7 @@ import { ArrowUpRight, Clock3, Radar, Satellite } from "lucide-react";
 import { api, queryKeys } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function LiveNisarFeed() {
   const { data, isLoading, isError } = useQuery({
@@ -57,19 +58,16 @@ export function LiveNisarFeed() {
                 className="group relative block aspect-[4/3] overflow-hidden bg-background"
                 title={`${granule.id} · ${formatDate(granule.start)}`}
               >
-                {granule.browse_thumbnail ? (
-                   
-                  <img
-                    src={granule.browse_thumbnail}
-                    alt={`NISAR browse image acquired ${formatDate(granule.start)}`}
-                    className="size-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-muted">
-                    <Radar className="size-4" />
-                  </div>
-                )}
+                <SafeImage
+                  src={granule.browse_thumbnail}
+                  alt={`NISAR browse image acquired ${formatDate(granule.start)}`}
+                  className="size-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-[1.03]"
+                  fallback={
+                    <div className="flex size-full items-center justify-center text-muted">
+                      <Radar className="size-4" />
+                    </div>
+                  }
+                />
                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-6">
                   <span className="font-mono text-[9px] text-white/90">
                     {formatDate(granule.start, { month: "short", day: "2-digit" })}

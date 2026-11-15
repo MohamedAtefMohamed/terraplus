@@ -5,6 +5,7 @@ import { ArrowUpRight, Radar, Satellite, Waves } from "lucide-react";
 import { api, queryKeys } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function LiveCatalogueCard() {
@@ -57,19 +58,16 @@ export function LiveCatalogueCard() {
               className="group relative block aspect-[4/3] overflow-hidden bg-background"
               title={`${granule.id} · ${formatDate(granule.start)}`}
             >
-              {granule.browse_thumbnail ? (
-                 
-                <img
-                  src={granule.browse_thumbnail}
-                  alt={`NISAR browse image ${formatDate(granule.start)}`}
-                  className="size-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-[1.04]"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="flex size-full items-center justify-center text-muted">
-                  <Satellite className="size-4" />
-                </div>
-              )}
+              <SafeImage
+                src={granule.browse_thumbnail}
+                alt={`NISAR browse image ${formatDate(granule.start)}`}
+                className="size-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-[1.04]"
+                fallback={
+                  <div className="flex size-full items-center justify-center text-muted">
+                    <Satellite className="size-4" />
+                  </div>
+                }
+              />
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/85 to-transparent px-2 pb-1.5 pt-5">
                 <span className="font-mono text-[9px] text-white/90">
                   {formatDate(granule.start, { month: "short", day: "2-digit" })}

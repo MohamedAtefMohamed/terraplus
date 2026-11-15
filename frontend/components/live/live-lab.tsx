@@ -24,6 +24,7 @@ import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/analysis/before-after-slider";
+import { SafeImage } from "@/components/ui/safe-image";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorPanel } from "@/components/ui/error-panel";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,19 +58,16 @@ function GranuleCard({ granule }: { granule: LiveNisarGranule }) {
         aria-expanded={open}
       >
         <div className="relative aspect-[16/9] bg-background">
-          {granule.browse_thumbnail ? (
-             
-            <img
-              src={granule.browse_thumbnail}
-              alt={`NISAR browse image, ${formatDate(granule.start)}`}
-              className="size-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex size-full items-center justify-center text-muted">
-              <Radar className="size-5" />
-            </div>
-          )}
+          <SafeImage
+            src={granule.browse_thumbnail}
+            alt={`NISAR browse image, ${formatDate(granule.start)}`}
+            className="size-full object-cover"
+            fallback={
+              <div className="flex size-full items-center justify-center text-muted">
+                <Radar className="size-5" />
+              </div>
+            }
+          />
           <div className="absolute left-2 top-2">
             <Badge variant="teal">{granule.product_level || "L1"}</Badge>
           </div>
@@ -105,12 +103,10 @@ function GranuleCard({ granule }: { granule: LiveNisarGranule }) {
             rel="noreferrer noopener"
             className="mt-2 block overflow-hidden rounded border border-line"
           >
-            { }
-            <img
+            <SafeImage
               src={browse}
               alt={`Full NISAR quick-look, ${formatDate(granule.start)}`}
               className="w-full object-contain"
-              loading="lazy"
             />
           </a>
         ) : null}
