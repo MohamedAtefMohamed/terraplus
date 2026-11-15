@@ -10,14 +10,23 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function AreaCard({ location }: { location: Location }) {
+  // One shared request for every card on the page; the backend resolves the
+  // newest browse quick-look per area and caches it.
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.liveNisar({ area: location.slug }),
-    queryFn: () => api.liveNisar({ location: location.slug, days: 90, limit: 3 }),
-    staleTime: 180_000,
+    queryKey: queryKeys.areaThumbnails,
+    queryFn: api.areaThumbnails,
+    staleTime: 600_000,
+    refetchInterval: (query) =>
+      query.state.data && query.state.data.count > 0 ? false : 12000,
   });
 
-  const latest = data?.items?.[0];
-  const thumbnail = latest?.browse_thumbnail;
+  const latest = data?.areas.find((row) => row.slug === location.slug) || null;
+  const thumbnail = latest?.thumbnail;
+  const count = location.observation_count;
+  const countLabel =
+    count === null || count === undefined
+      ? "counting"
+      : `${count}${location.observation_count_capped ? "+" : ""} acq. days`;
 
   return (
     <article className="panel panel-hover group flex flex-col overflow-hidden">
@@ -52,7 +61,7 @@ export function AreaCard({ location }: { location: Location }) {
         </div>
         <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
           <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-strong">
-            {latest ? formatDate(latest.start) : location.name}
+            {latest?.start ? formatDate(latest.start) : location.name}
           </span>
           <span className="font-mono text-[10px] text-muted">
             {location.bbox[0].toFixed(2)}°, {location.bbox[1].toFixed(2)}°
@@ -93,9 +102,7 @@ export function AreaCard({ location }: { location: Location }) {
               Map
             </Link>
           </div>
-          <span className="font-mono text-[10px] text-muted">
-            {data ? `${data.count} NISAR · 90d` : "querying ASF"}
-          </span>
+          <span className="font-mono text-[10px] text-muted">{countLabel} · 90d</span>
         </div>
       </div>
     </article>

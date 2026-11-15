@@ -1,5 +1,6 @@
 import type {
   Analysis,
+  AreaThumbnailsResponse,
   LiveChangeResult,
   LiveNisarResponse,
   LiveScenesResponse,
@@ -128,6 +129,7 @@ export const api = {
   layers: () => request<LayersResponse>("/api/layers"),
   dataSources: () => request<DataSourcesResponse>("/api/data-sources"),
   geojson: (id: number) => request<GeoJSON.FeatureCollection>(`/api/analysis/${id}/geojson`),
+  areaThumbnails: () => request<AreaThumbnailsResponse>("/api/live/thumbnails"),
   liveNisar: (params?: { location?: string; bbox?: string; days?: number; limit?: number }) =>
     request<LiveNisarResponse>(`/api/live/nisar${queryString(params || {})}`),
   liveScenes: (params: { bbox: string; days?: number }) =>
@@ -165,4 +167,5 @@ export const queryKeys = {
   layers: ["layers"] as const,
   dataSources: ["data-sources"] as const,
   liveNisar: (params?: Record<string, unknown>) => ["live-nisar", params] as const,
+  areaThumbnails: ["area-thumbnails"] as const,
 };

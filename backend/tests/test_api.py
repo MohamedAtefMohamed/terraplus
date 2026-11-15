@@ -35,7 +35,9 @@ def test_locations_are_real_and_not_synthetic(client, catalog):
     assert all(row["category"] for row in rows)
     atchafalaya = next(row for row in rows if row["slug"] == "atchafalaya")
     assert atchafalaya["bbox"][0] < atchafalaya["bbox"][2]
-    assert atchafalaya["observation_count"] >= 0
+    count = atchafalaya["observation_count"]
+    # Counts warm in a background pass, so they may be null on a cold instance.
+    assert count is None or count >= 0
     for row in rows:
         west, south, east, north = row["bbox"]
         assert -180 <= west < east <= 180 and -90 <= south < north <= 90

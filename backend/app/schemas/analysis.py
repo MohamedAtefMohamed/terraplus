@@ -109,7 +109,8 @@ class LocationOut(BaseModel):
     center_lon: float
     bbox: list[float]
     is_demo: bool
-    observation_count: int = 0
+    observation_count: int | None = None
+    observation_count_capped: bool = False
     latest_analysis: AnalysisSummaryOut | None = None
 
 

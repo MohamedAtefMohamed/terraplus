@@ -141,7 +141,11 @@ export function DashboardView() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{location.observation_count} NISAR</Badge>
+                      <Badge variant="outline">
+                        {location.observation_count == null
+                          ? "counting"
+                          : `${location.observation_count}${location.observation_count_capped ? "+" : ""} acq. days`}
+                      </Badge>
                       {location.latest_analysis ? (
                         <Badge variant="emerald">cached</Badge>
                       ) : (

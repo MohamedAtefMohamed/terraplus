@@ -223,6 +223,7 @@ export interface Location {
   bbox: [number, number, number, number];
   is_demo: boolean;
   observation_count: number;
+  observation_count_capped?: boolean;
   latest_analysis: AnalysisSummary | null;
 }
 
@@ -523,6 +524,20 @@ export interface LiveChangeResult {
   limitations: string;
   computed_at: string;
   elapsed_seconds: number;
+}
+
+export interface AreaThumbnail {
+  slug: string;
+  id: string | null;
+  start: string | null;
+  thumbnail: string | null;
+  preview: string | null;
+  product_level: string | null;
+}
+
+export interface AreaThumbnailsResponse {
+  count: number;
+  areas: AreaThumbnail[];
 }
 
 export interface LiveScenesResponse {

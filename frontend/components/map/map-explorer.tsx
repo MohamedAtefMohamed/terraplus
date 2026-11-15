@@ -273,7 +273,14 @@ export function MapExplorer() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
 
-  const locationsQuery = useQuery({ queryKey: queryKeys.locations, queryFn: api.locations });
+  const locationsQuery = useQuery({
+    queryKey: queryKeys.locations,
+    queryFn: api.locations,
+    refetchInterval: (query) => {
+      const rows = query.state.data;
+      return rows?.some((row) => row.observation_count == null) ? 12000 : false;
+    },
+  });
   const layersQuery = useQuery({ queryKey: queryKeys.layers, queryFn: api.layers });
   const configQuery = useQuery({ queryKey: queryKeys.config, queryFn: api.config });
   const observationsQuery = useQuery({
@@ -522,7 +529,9 @@ export function MapExplorer() {
                             </span>
                           </span>
                           <span className="shrink-0 font-mono text-[10px] text-muted">
-                            {item.observation_count}
+                            {item.observation_count == null
+                              ? "—"
+                              : `${item.observation_count}${item.observation_count_capped ? "+" : ""}d`}
                           </span>
                         </button>
                       ))

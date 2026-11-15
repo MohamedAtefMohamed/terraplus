@@ -27,6 +27,7 @@ from app.services.live.sentinel1_change import (
     compute_change,
 )
 from app.services.live.store import (
+    area_thumbnails,
     compare_for_location,
     dashboard_payload,
     data_sources_payload,
@@ -409,6 +410,12 @@ def live_status() -> dict:
             "note": "Windowed COG reads over HTTPS; read-only.",
         },
     }
+
+
+@router.get("/live/thumbnails", tags=["live"])
+def live_thumbnails() -> dict:
+    rows = area_thumbnails()
+    return {"count": len(rows), "areas": rows}
 
 
 @router.get("/areas", tags=["live"])

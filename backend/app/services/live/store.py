@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from typing import Any
 
@@ -123,7 +126,66 @@ def granule_to_observation(granule: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _area_location(area: Area, nisar_count: int, latest_analysis: dict | None) -> dict[str, Any]:
+# Counting granules per area costs one ASF query per area, which is far too slow
+# to do inline. The list renders immediately and a background warm pass fills the
+# counts in; clients poll until every area has a value.
+_CATALOGUE_LIMIT = 250
+_COUNT_TTL = 1800.0
+_LOCATIONS_TTL = 120.0
+_LOCATIONS_CACHE: tuple[float, list[dict[str, Any]]] | None = None
+_COUNT_CACHE: dict[str, tuple[float, int, bool]] = {}
+_COUNT_LOCK = threading.Lock()
+_WARMING = False
+
+
+def _area_catalogue_count(area: Area) -> tuple[int, bool]:
+    """Distinct acquisition days in the last 90 days, plus whether the cap was hit.
+
+    Counting days rather than granule rows avoids triple-counting RSLC/GSLC/GCOV
+    products for the same pass, and it does not saturate for every area.
+    """
+    catalogue = recent_nisar(bbox=area.bbox, days=90, limit=_CATALOGUE_LIMIT)
+    items = catalogue.get("items", [])
+    days = {item.get("start", "")[:10] for item in items if item.get("start")}
+    return len(days), len(items) >= _CATALOGUE_LIMIT
+
+
+def _cached_count(area: Area) -> tuple[int, bool] | None:
+    with _COUNT_LOCK:
+        hit = _COUNT_CACHE.get(area.slug)
+    if hit and time.monotonic() - hit[0] < _COUNT_TTL:
+        return hit[1], hit[2]
+    return None
+
+
+def _warm_counts() -> None:
+    global _WARMING
+    with _COUNT_LOCK:
+        if _WARMING:
+            return
+        _WARMING = True
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = list(pool.map(_area_catalogue_count, AREAS))
+        stamp = time.monotonic()
+        with _COUNT_LOCK:
+            for area, result in zip(AREAS, results, strict=True):
+                days, capped = result
+                _COUNT_CACHE[area.slug] = (stamp, days, capped)
+    except Exception:  # noqa: BLE001
+        pass
+    finally:
+        with _COUNT_LOCK:
+            _WARMING = False
+
+
+def _area_location(
+    area: Area,
+    count: tuple[int, bool] | None,
+    latest_analysis: dict | None,
+) -> dict[str, Any]:
+    nisar_count = count[0] if count else None
+    capped = bool(count and count[1])
     return {
         "id": area_index(area.slug) + 1,
         "slug": area.slug,
@@ -140,6 +202,7 @@ def _area_location(area: Area, nisar_count: int, latest_analysis: dict | None) -
         "bbox": area.bbox,
         "is_demo": False,
         "observation_count": nisar_count,
+        "observation_count_capped": capped,
         "latest_analysis": latest_analysis,
     }
 
@@ -341,12 +404,69 @@ def _analysis_detail(area: Area, summary: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+_THUMB_TTL = 600.0
+_THUMB_CACHE: tuple[float, list[dict[str, Any]]] | None = None
+_THUMB_LOCK = threading.Lock()
+_THUMB_WARMING = False
+
+
+def _warm_thumbnails() -> None:
+    global _THUMB_CACHE, _THUMB_WARMING
+    with _THUMB_LOCK:
+        if _THUMB_WARMING:
+            return
+        _THUMB_WARMING = True
+
+    def one(area: Area) -> dict[str, Any]:
+        try:
+            catalogue = recent_nisar(bbox=area.bbox, days=365, limit=1)
+            items = catalogue.get("items") or []
+            item = items[0] if items else None
+        except Exception:  # noqa: BLE001
+            item = None
+        return {
+            "slug": area.slug,
+            "id": item.get("id") if item else None,
+            "start": item.get("start") if item else None,
+            "thumbnail": (item.get("browse_thumbnail") or item.get("browse_latlon")) if item else None,
+            "preview": (item.get("browse_latlon") or item.get("browse_thumbnail")) if item else None,
+            "product_level": item.get("product_level") if item else None,
+        }
+
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            rows = list(pool.map(one, AREAS))
+        with _THUMB_LOCK:
+            _THUMB_CACHE = (time.monotonic(), rows)
+    finally:
+        with _THUMB_LOCK:
+            _THUMB_WARMING = False
+
+
+def area_thumbnails() -> list[dict[str, Any]]:
+    """Latest browse quick-look per area; warmed in the background on first use."""
+    now = time.monotonic()
+    if _THUMB_CACHE and now - _THUMB_CACHE[0] < _THUMB_TTL:
+        return _THUMB_CACHE[1]
+    threading.Thread(target=_warm_thumbnails, daemon=True).start()
+    return []
+
+
 def list_locations() -> list[dict[str, Any]]:
-    payload = []
-    for area in AREAS:
-        catalogue = recent_nisar(bbox=area.bbox, days=365, limit=50)
-        summary = _read_registry(area.slug)
-        payload.append(_area_location(area, catalogue.get("count", 0), summary))
+    """Return every area immediately; catalogue counts arrive from the warm pass."""
+    global _LOCATIONS_CACHE
+    now = time.monotonic()
+    if _LOCATIONS_CACHE and now - _LOCATIONS_CACHE[0] < _LOCATIONS_TTL:
+        return _LOCATIONS_CACHE[1]
+
+    payload = [
+        _area_location(area, _cached_count(area), _read_registry(area.slug))
+        for area in AREAS
+    ]
+    if all(row["observation_count"] is not None for row in payload):
+        _LOCATIONS_CACHE = (now, payload)
+    else:
+        threading.Thread(target=_warm_counts, daemon=True).start()
     return payload
 
 
@@ -678,7 +798,7 @@ def timeline_payload(slug: str) -> dict[str, Any] | None:
     if area is None:
         return None
     scenes = available_scenes(area.bbox, days=180)
-    catalogue = recent_nisar(bbox=area.bbox, days=180, limit=50)
+    catalogue = recent_nisar(bbox=area.bbox, days=180, limit=50)  # noqa: E501
     observations = []
     previous: datetime | None = None
     for scene in sorted(scenes.get("items", []), key=lambda item: item["datetime"]):
@@ -725,7 +845,9 @@ def timeline_payload(slug: str) -> dict[str, Any] | None:
             }
         )
     return {
-        "location": _area_location(area, catalogue.get("count", 0), summary),
+        "location": _area_location(
+            area, (catalogue.get("count", 0), False), summary
+        ),
         "observations": observations,
         "comparisons": comparisons,
         "trend_summary": (
