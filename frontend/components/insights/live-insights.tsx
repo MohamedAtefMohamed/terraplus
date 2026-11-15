@@ -174,6 +174,12 @@ export function LiveInsights() {
 
       {explanationQuery.isLoading ? <Skeleton className="mt-6 h-64 w-full rounded-lg" /> : null}
 
+      {statistics ? (
+        <div className="mt-6">
+          <AnalysisCharts statistics={statistics} />
+        </div>
+      ) : null}
+
       {direct && !explanation ? (
         <div className="mt-6 space-y-4">
           <section className="panel bracket p-5">
@@ -252,8 +258,6 @@ export function LiveInsights() {
               {explanation.summary}
             </p>
           </section>
-
-          {statistics ? <AnalysisCharts statistics={statistics} /> : null}
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <section className="panel p-5">
