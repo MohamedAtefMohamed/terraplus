@@ -31,11 +31,19 @@ class LiveChangeError(RuntimeError):
     pass
 
 
+# Preference order for the like-polarisation channel. Mid-latitude GRD is VV;
+# polar and ice acquisitions are frequently HH-only (single-polarisation 1SDH).
+BAND_PREFERENCE = ("vv", "hh", "vh", "hv")
+
+
 def _normalize_scene(feature: dict[str, Any]) -> dict[str, Any]:
     props = feature.get("properties") or {}
     assets = feature.get("assets") or {}
-    vv = (assets.get("vv") or {}).get("href")
-    vh = (assets.get("vh") or {}).get("href")
+    hrefs = {
+        band: (assets.get(band) or {}).get("href")
+        for band in BAND_PREFERENCE
+    }
+    band = next((name for name in BAND_PREFERENCE if hrefs.get(name)), None)
     thumbnail = (assets.get("thumbnail") or {}).get("href")
     return {
         "id": feature.get("id"),
@@ -46,8 +54,10 @@ def _normalize_scene(feature: dict[str, Any]) -> dict[str, Any]:
         "instrument_mode": props.get("sar:instrument_mode"),
         "polarizations": props.get("sar:polarizations") or [],
         "resolution_m": props.get("sar:resolution_range"),
-        "vv_href": vv,
-        "vh_href": vh,
+        "band": band,
+        "band_href": hrefs.get(band) if band else None,
+        "vv_href": hrefs.get("vv"),
+        "vh_href": hrefs.get("vh"),
         "thumbnail_href": thumbnail,
         "footprint": (feature.get("geometry") or {}).get("coordinates"),
     }
@@ -69,7 +79,9 @@ def search_scenes(bbox: list[float], days: int = 90, limit: int = 80) -> list[di
         "bbox": bbox,
         "limit": max(1, min(limit, 100)),
         "datetime": f"{datetime.fromtimestamp(end.timestamp() - days * 86400, UTC).isoformat()}/{end.isoformat()}",
-        "query": {"sar:instrument_mode": {"eq": "IW"}},
+        # No instrument-mode filter: Greenland and Arctic ice use EW, mid-latitudes
+        # use IW. Pairing enforces one mode per comparison and prefers IW.
+        "query": {"sar:instrument_mode": {"in": ["IW", "EW"]}},
     }
     try:
         with httpx.Client(timeout=30.0, follow_redirects=True) as client:
@@ -84,18 +96,23 @@ def search_scenes(bbox: list[float], days: int = 90, limit: int = 80) -> list[di
         raise LiveChangeError(f"Earth Search returned HTTP {response.status_code}.")
     features = (response.json() or {}).get("features") or []
     scenes = [_normalize_scene(feature) for feature in features]
-    result = [scene for scene in scenes if scene.get("vv_href")]
+    result = [scene for scene in scenes if scene.get("band_href")]
     _SCENE_CACHE[cache_key] = (time.time(), result)
     return result
 
 
 def pick_pair(scenes: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, Any]]:
     """Choose two acquisitions from the same relative orbit, closest to the 12-day repeat."""
-    groups: dict[tuple[Any, Any], list[dict[str, Any]]] = {}
+    groups: dict[tuple[Any, Any, Any], list[dict[str, Any]]] = {}
     for scene in scenes:
         if not scene.get("datetime"):
             continue
-        key = (scene.get("relative_orbit"), scene.get("orbit_state"))
+        key = (
+            scene.get("relative_orbit"),
+            scene.get("orbit_state"),
+            scene.get("instrument_mode"),
+            scene.get("band"),
+        )
         groups.setdefault(key, []).append(scene)
 
     best: tuple[dict[str, Any], dict[str, Any]] | None = None
@@ -111,7 +128,12 @@ def pick_pair(scenes: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, A
             gap_days = (after_dt - before_dt).total_seconds() / 86400
             if gap_days < 3:
                 continue
-            score = abs(gap_days - 12)
+            # Both repeat intervals are real: 12 days single-satellite, 6 days with
+            # two satellites in the constellation. Grade against the nearest one.
+            repeat_distance = min(abs(gap_days - 6), abs(gap_days - 12))
+            # Prefer interferometric-wide pairs; EW is the only option over polar ice,
+            # so it is a tie-breaker rather than a filter.
+            score = repeat_distance + (0 if after.get("instrument_mode") == "IW" else 0.75)
             if score < best_score:
                 best_score = score
                 best = (candidate, after)
@@ -340,8 +362,8 @@ def compute_change(
             return cached
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    before_db = _median3(_dn_to_db(_read_grid(before["vv_href"], bbox, grid_size)))
-    after_db = _median3(_dn_to_db(_read_grid(after["vv_href"], bbox, grid_size)))
+    before_db = _median3(_dn_to_db(_read_grid(before["band_href"], bbox, grid_size)))
+    after_db = _median3(_dn_to_db(_read_grid(after["band_href"], bbox, grid_size)))
 
     valid = np.isfinite(before_db) & np.isfinite(after_db)
     if valid.sum() < 256:
@@ -392,8 +414,15 @@ def compute_change(
             1,
         ),
         "method": {
-            "sensor": "Sentinel-1 C-band GRD (VV)",
-            "policy": "relative backscatter, decimated 512 px grid, 3x3 median speckle screen",
+            "sensor": (
+                "Sentinel-1 C-band GRD "
+                f"{(before.get('instrument_mode') or 'IW')}/"
+                f"{(before.get('band') or 'vv').upper()}"
+            ),
+            "policy": (
+                "relative backscatter, decimated 512 px grid, 3x3 median speckle screen, "
+                "like-polarisation pairing (VV preferred, HH when the archive is single-pol)"
+            ),
             "change_threshold_db": threshold_db,
             "water_threshold_db": round(water_threshold, 2),
             "water_threshold_method": "Otsu split of the pooled dB histogram",

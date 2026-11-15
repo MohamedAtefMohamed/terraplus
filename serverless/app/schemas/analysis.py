@@ -101,6 +101,7 @@ class LocationOut(BaseModel):
     country: str
     region: str
     focus: str
+    category: str = "Flood & wetland"
     scenario: str
     description: str
     monitoring_note: str

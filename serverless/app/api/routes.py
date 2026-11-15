@@ -19,7 +19,7 @@ from app.schemas.analysis import (
     ObservationOut,
     TimelineOut,
 )
-from app.services.live.areas import AREAS, get_area
+from app.services.live.areas import AREAS, categories, get_area
 from app.services.live.nisar_live import nisar_status, recent_nisar
 from app.services.live.sentinel1_change import (
     LiveChangeError,
@@ -414,6 +414,8 @@ def live_status() -> dict:
 @router.get("/areas", tags=["live"])
 def areas() -> dict:
     return {
+        "count": len(AREAS),
+        "categories": categories(),
         "areas": [
             {
                 "slug": area.slug,
@@ -421,11 +423,13 @@ def areas() -> dict:
                 "country": area.country,
                 "region": area.region,
                 "focus": area.focus,
+                "category": area.category,
+                "description": area.description,
                 "bbox": area.bbox,
                 "center": [area.center_lon, area.center_lat],
                 "area_km2": area.area_km2,
                 "note": area.note,
             }
             for area in AREAS
-        ]
+        ],
     }
