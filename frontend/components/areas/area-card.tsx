@@ -10,21 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function AreaCard({ location }: { location: Location }) {
-  // One shared request for every card on the page; the backend resolves the
-  // newest browse quick-look per area and caches it.
+  // One cheap catalogue query per card (a single granule) — no shared warm state,
+  // so every deployment instance returns the same answer.
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.areaThumbnails,
-    queryFn: api.areaThumbnails,
+    queryKey: queryKeys.liveNisar({ area: location.slug, limit: 1 }),
+    queryFn: () => api.liveNisar({ location: location.slug, days: 365, limit: 1 }),
     staleTime: 600_000,
-    refetchInterval: (query) =>
-      query.state.data && query.state.data.count > 0 ? false : 12000,
   });
 
-  const latest = data?.areas.find((row) => row.slug === location.slug) || null;
-  const thumbnail = latest?.thumbnail;
-  const count = location.observation_count;
-  const countLabel =
-    count === null || count === undefined ? "counting" : `${count} acq. days`;
+  const latest = data?.items?.[0] || null;
+  const thumbnail = latest?.browse_thumbnail || latest?.browse_latlon;
 
   return (
     <article className="panel panel-hover group flex flex-col overflow-hidden">
@@ -43,7 +38,7 @@ export function AreaCard({ location }: { location: Location }) {
           <div className="grid size-full place-items-center">
             <div className="text-center">
               <Radar className="mx-auto size-5 text-muted" />
-              <p className="mt-1 text-[10px] text-muted">No granule in the last 90 days</p>
+              <p className="mt-1 text-[10px] text-muted">No granule in the last year</p>
             </div>
           </div>
         )}
@@ -100,7 +95,9 @@ export function AreaCard({ location }: { location: Location }) {
               Map
             </Link>
           </div>
-          <span className="font-mono text-[10px] text-muted">{countLabel} · 90d</span>
+          <span className="font-mono text-[10px] text-muted">
+            {latest?.start ? `latest ${formatDate(latest.start)}` : "no recent granule"}
+          </span>
         </div>
       </div>
     </article>

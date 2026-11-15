@@ -28,10 +28,6 @@ export function DashboardView() {
   const query = useQuery({
     queryKey: queryKeys.dashboard,
     queryFn: api.dashboard,
-    refetchInterval: (state) => {
-      const rows = state.state.data?.locations;
-      return rows?.some((row) => row.observation_count == null) ? 12000 : false;
-    },
   });
   const sources = useQuery({ queryKey: queryKeys.dataSources, queryFn: api.dataSources });
   const data = query.data;
@@ -148,11 +144,7 @@ export function DashboardView() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">
-                        {location.observation_count == null
-                          ? "counting"
-                          : `${location.observation_count} acq. days`}
-                      </Badge>
+                      <Badge variant="outline">{location.category}</Badge>
                       {location.latest_analysis ? (
                         <Badge variant="emerald">cached</Badge>
                       ) : (

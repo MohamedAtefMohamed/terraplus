@@ -276,10 +276,6 @@ export function MapExplorer() {
   const locationsQuery = useQuery({
     queryKey: queryKeys.locations,
     queryFn: api.locations,
-    refetchInterval: (query) => {
-      const rows = query.state.data;
-      return rows?.some((row) => row.observation_count == null) ? 12000 : false;
-    },
   });
   const layersQuery = useQuery({ queryKey: queryKeys.layers, queryFn: api.layers });
   const configQuery = useQuery({ queryKey: queryKeys.config, queryFn: api.config });
@@ -529,9 +525,7 @@ export function MapExplorer() {
                             </span>
                           </span>
                           <span className="shrink-0 font-mono text-[10px] text-muted">
-                            {item.observation_count == null
-                              ? "—"
-                              : `${item.observation_count}d`}
+                            {item.bbox[0].toFixed(1)}°, {item.bbox[1].toFixed(1)}°
                           </span>
                         </button>
                       ))

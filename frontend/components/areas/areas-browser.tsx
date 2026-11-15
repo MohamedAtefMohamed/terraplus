@@ -28,10 +28,6 @@ export function AreasBrowser() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: queryKeys.locations,
     queryFn: api.locations,
-    refetchInterval: (query) => {
-      const rows = query.state.data;
-      return rows?.some((row) => row.observation_count == null) ? 12000 : false;
-    },
   });
 
   const locations = useMemo(() => data || [], [data]);
